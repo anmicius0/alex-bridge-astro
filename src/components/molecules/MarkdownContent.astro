@@ -1,0 +1,85 @@
+---
+/**
+ * MarkdownContent Component
+ * Renders markdown content with consistent styling
+ * Used in news, holiday, and file pages
+ */
+
+import { Image } from 'astro:assets';
+import Button from '../atoms/Button.astro';
+import DateDisplay from '../atoms/DateDisplay.astro';
+
+interface Props {
+  title: string;
+  date?: Date | string;
+  dateRange?: {
+    start: Date | string;
+    end: Date | string;
+  };
+  image?: string;
+  backLink?: string;
+  backText?: string;
+  class?: string;
+}
+
+const {
+  title,
+  date,
+  dateRange,
+  image,
+  backLink,
+  backText = '← Zurück',
+  class: extraClass = '',
+} = Astro.props;
+---
+
+<article class={`max-w-3xl mx-auto ${extraClass}`}>
+  {
+    backLink && (
+      <div class="mb-5">
+        <Button text={backText} link={backLink} target="_self" />
+      </div>
+    )
+  }
+
+  {
+    image && (
+      <div class="mb-6 media-frame">
+        {image.startsWith('http') ? (
+          <img src={image} alt={title} class="object-cover w-full h-96" />
+        ) : (
+          <Image
+            src={image}
+            alt={title}
+            class="object-cover w-full h-96"
+            width={800}
+            height={384}
+          />
+        )}
+      </div>
+    )
+  }
+
+  <h1 class="mb-2">{title}</h1>
+
+  {
+    date && (
+      <p class="mb-6 text-sm text-gray-400">
+        <DateDisplay date={date} />
+      </p>
+    )
+  }
+
+  {
+    dateRange && (
+      <p class="mb-6 text-sm text-gray-400">
+        <DateDisplay date={dateRange.start} /> —{' '}
+        <DateDisplay date={dateRange.end} />
+      </p>
+    )
+  }
+
+  <div class="prose prose-lg prose-brutal max-w-none">
+    <slot />
+  </div>
+</article>

@@ -1,0 +1,32 @@
+---
+/**
+ * FeaturesGrid Component
+ * Displays feature highlights in a responsive grid
+ */
+
+interface Props {
+  features: Array<{
+    icon: string;
+    title: string;
+    description: string;
+  }>;
+  class?: string;
+}
+
+const { features, class: extraClass = '' } = Astro.props;
+import IconBox from '../atoms/IconBox.astro';
+---
+
+<div class={`grid gap-12 md:grid-cols-3 md:gap-16 ${extraClass}`}>
+  {
+    features.map((feature) => (
+      <div class="flex flex-col items-center px-4 text-center">
+        <IconBox icon={feature.icon} class="mb-6" />
+        <h3 class="mb-4 text-2xl font-bold leading-tight">{feature.title}</h3>
+        <p class="max-w-sm text-lg leading-relaxed text-gray-700">
+          {feature.description}
+        </p>
+      </div>
+    ))
+  }
+</div>

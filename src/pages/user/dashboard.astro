@@ -1,0 +1,32 @@
+---
+import { SignOut } from 'auth-astro/components';
+import { getSession } from 'auth-astro/server';
+import Layout from '../../layouts/Layout.astro';
+
+const session = await getSession(Astro.request);
+
+if (!session?.user) {
+  return Astro.redirect('/user/login');
+}
+
+const user = session.user as { name?: string; email?: string };
+---
+
+<Layout title="Dashboard">
+  <section class="section">
+    <div class="max-w-2xl mx-auto">
+      <div class="card p-8 md:p-10">
+        <div class="text-center">
+          <h1 class="mb-4">Willkommen, {user.name || user.email}!</h1>
+          <p class="mb-8 text-lg text-gray-600">Sie sind angemeldet.</p>
+        </div>
+
+        <SignOut
+          class="inline-flex items-center justify-center gap-2 font-semibold border-3 rounded-md transition-all duration-200 shadow-[4px_4px_0_#000] hover:shadow-[10px_10px_0_#000] hover:-translate-x-[1px] hover:-translate-y-[1px] h-12 px-6 text-base bg-[var(--red)] text-black w-full"
+        >
+          Abmelden
+        </SignOut>
+      </div>
+    </div>
+  </section>
+</Layout>

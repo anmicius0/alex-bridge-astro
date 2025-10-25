@@ -1,0 +1,18 @@
+// Custom SCSS variables for the project
+$custom-spacing-unit: 1.5rem; // For padding/margins
+$custom-breakpoint-sm: 576px;
+$custom-breakpoint-md: 768px;
+$custom-breakpoint-lg: 1024px;
+
+// Colors
+$custom-color-primary-500: #556b2f;
+$custom-color-surface-600: #57534e;
+$custom-color-surface-800: #292524;
+
+// Shadows
+$custom-shadow-light: 0 1px 3px rgba(0, 0, 0, 0.1);
+$custom-shadow-medium: 0 4px 6px rgba(0, 0, 0, 0.1);
+$custom-shadow-large: 0 8px 32px rgba(85, 107, 47, 0.12);
+
+// Border radius
+$border-radius: 1rem;

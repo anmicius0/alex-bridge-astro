@@ -1,0 +1,34 @@
+---
+import Layout from '../../layouts/Layout.astro';
+import { getSession } from 'auth-astro/server';
+
+const session = await getSession(Astro.request);
+if (session) return Astro.redirect('/user/dashboard');
+---
+
+<Layout title="Anmelden">
+  <section class="section">
+    <div class="max-w-md mx-auto">
+      <div class="card p-8">
+        <h1 class="mb-4 text-3xl text-center">Anmelden</h1>
+        <p class="mb-6 text-center">
+          Neu hier? <a
+            href="/user/register"
+            class="text-brutalBlue font-semibold hover:underline"
+            >Konto erstellen</a
+          >
+        </p>
+        <button id="signinBtn" class="btn btn-primary w-full"
+          >Mit Auth0 anmelden</button
+        >
+      </div>
+    </div>
+  </section>
+</Layout>
+
+<script>
+  const { signIn } = await import('auth-astro/client');
+  document
+    .getElementById('signinBtn')
+    ?.addEventListener('click', () => signIn('auth0'));
+</script>

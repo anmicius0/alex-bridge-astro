@@ -1,0 +1,364 @@
+/**
+ * CSS Architecture:
+ * - Tailwind CSS v4 for utility-first CSS (see tailwind.config.mjs)
+ * - Custom SCSS for project-specific brutalist design styles
+ */
+
+@use 'tailwindcss';
+
+/* Design tokens */
+$border-color: #000000;
+$brutal-pink: #f396e5;
+$brutal-blue: #96c7f2;
+$brutal-yellow: #f2cf96;
+$brutal-green: #adf296;
+
+:root {
+  --border: #000000;
+  --pink: #f396e5;
+  --blue: #96c7f2;
+  --yellow: #f2cf96;
+  --green: #adf296;
+
+  --radius-md: 10px;
+  --radius-lg: 18px;
+
+  --shadow-sm: 4px 4px 0 #000;
+  --shadow-lg: 10px 10px 0 #000;
+}
+
+/* Base */
+html,
+body {
+  background: #fff;
+  color: #000;
+  min-height: 100%;
+  font-family:
+    'Space Grotesk',
+    system-ui,
+    -apple-system,
+    Segoe UI,
+    Roboto,
+    Ubuntu,
+    Cantarell,
+    'Helvetica Neue',
+    Arial,
+    'Noto Sans',
+    'Apple Color Emoji',
+    'Segoe UI Emoji',
+    'Segoe UI Symbol',
+    sans-serif;
+  scroll-behavior: smooth;
+}
+
+h1,
+h2,
+h3 {
+  line-height: 1.1;
+  letter-spacing: -0.01em;
+}
+h1 {
+  font-weight: 700;
+  font-size: clamp(2rem, 3vw + 1rem, 3rem);
+}
+h2 {
+  font-weight: 700;
+  font-size: clamp(1.5rem, 2.2vw + 1rem, 2.5rem);
+}
+h3 {
+  font-weight: 700;
+  font-size: clamp(1.25rem, 1.6vw + 0.75rem, 2rem);
+}
+
+p {
+  font-size: 1.06rem;
+  line-height: 1.75;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+  text-underline-offset: 0.2em;
+  text-decoration-thickness: 2px;
+  transition:
+    color 0.2s ease,
+    text-decoration-color 0.2s ease;
+}
+a:hover {
+  text-decoration: underline;
+}
+
+img {
+  border: 3px solid $border-color;
+  border-radius: 14px;
+  box-shadow: var(--shadow-sm);
+}
+
+/* Layout helpers */
+.container-b {
+  width: 100%;
+  max-width: 1100px;
+  margin-inline: auto;
+  padding-inline: 1rem;
+}
+
+/* Header/Nav */
+.site-header {
+  background: #fff;
+  border-bottom: 3px solid $border-color;
+}
+
+.nav {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.nav-link {
+  border: 1px solid $border-color;
+  border-radius: 8px;
+  padding: 0.5rem 1rem;
+  transition:
+    box-shadow 0.2s ease,
+    border-width 0.1s ease,
+    transform 0.2s ease;
+}
+.nav-link:hover {
+  border-width: 3px;
+  box-shadow: var(--shadow-lg);
+  transform: translate(-1px, -1px);
+}
+.nav-link.is-active {
+  font-weight: 700;
+  text-decoration: underline;
+}
+
+/* Footer */
+.site-footer {
+  background: #fff;
+  border-top: 3px solid $border-color;
+}
+
+/* Components */
+.card {
+  background: #fff;
+  border: 3px solid $border-color;
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-sm);
+  transition:
+    box-shadow 0.2s ease,
+    transform 0.2s ease;
+}
+.card:hover {
+  box-shadow: var(--shadow-lg);
+  transform: translate(-1px, -1px);
+}
+
+.btn {
+  display: inline-block;
+  border: 1px solid $border-color;
+  border-radius: var(--radius-md);
+  padding: 0.6rem 1.1rem;
+  box-shadow: var(--shadow-sm);
+  background: #fff;
+  transition:
+    box-shadow 0.2s ease,
+    transform 0.2s ease;
+}
+.btn:hover {
+  box-shadow: var(--shadow-lg);
+  transform: translate(-1px, -1px);
+}
+.btn-primary {
+  background: $brutal-green;
+}
+.btn-secondary {
+  background: $brutal-blue;
+}
+.btn-contrast {
+  background: $brutal-pink;
+}
+.btn-warning {
+  background: $brutal-yellow;
+}
+
+.chip {
+  display: inline-block;
+  border: 3px solid $border-color;
+  border-radius: 999px;
+  padding: 0.25rem 0.75rem;
+  font-size: 0.9rem;
+  box-shadow: 2px 2px 0 #000;
+  background: #fff;
+}
+
+/* Sections */
+.section {
+  padding-block: 2.5rem;
+}
+@media (min-width: 768px) {
+  .section {
+    padding-block: 3.5rem;
+  }
+}
+
+/* Prose (markdown/article) */
+.prose {
+  max-width: none;
+
+  p {
+    margin-block: 1rem;
+  }
+
+  ul,
+  ol {
+    margin-block: 1rem 1.25rem;
+    padding-inline-start: 1.25rem;
+  }
+  li {
+    margin-block: 0.35rem;
+  }
+
+  a {
+    text-decoration: underline;
+  }
+
+  h1,
+  h2,
+  h3 {
+    margin-block: 1.25rem 0.75rem;
+  }
+
+  blockquote {
+    border-left: 3px solid $border-color;
+    padding-left: 1rem;
+    font-style: italic;
+  }
+
+  code {
+    border: 1px solid $border-color;
+    background: #fff;
+    padding: 0.15rem 0.35rem;
+    border-radius: 6px;
+    box-shadow: var(--shadow-sm);
+    font-family:
+      ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono',
+      'Courier New', monospace;
+    font-size: 0.95em;
+  }
+
+  pre {
+    border: 3px solid $border-color;
+    border-radius: 14px;
+    box-shadow: var(--shadow-sm);
+    padding: 1rem;
+    overflow: auto;
+    background: #fff;
+
+    code {
+      border: 0;
+      box-shadow: none;
+      padding: 0;
+      background: transparent;
+    }
+  }
+
+  table {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0;
+    border: 3px solid $border-color;
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: var(--shadow-sm);
+  }
+  th,
+  td {
+    padding: 0.6rem 0.8rem;
+    border-bottom: 1px solid #0002;
+  }
+  thead th {
+    background: $brutal-yellow;
+    border-bottom: 2px solid $border-color;
+    font-weight: 700;
+  }
+  tbody tr:hover {
+    background: #f8f8f8;
+  }
+}
+
+/* Forms */
+.input,
+input[type],
+textarea,
+select {
+  border: 2px solid $border-color;
+  border-radius: 10px;
+  padding: 0.6rem 0.8rem;
+  background: #fff;
+  transition:
+    border-width 0.1s ease,
+    box-shadow 0.2s ease;
+}
+.input:focus,
+input[type]:focus,
+textarea:focus,
+select:focus {
+  outline: none;
+  border-width: 3px;
+  box-shadow: 0 0 0 2px $brutal-yellow;
+}
+
+/* Media blocks */
+.media-frame {
+  border: 3px solid $border-color;
+  border-radius: 18px;
+  overflow: hidden;
+  box-shadow: var(--shadow-sm);
+}
+
+/* Grid helpers */
+.grid-cards {
+  display: grid;
+  gap: 1rem;
+  grid-template-columns: repeat(1, minmax(0, 1fr));
+}
+@media (min-width: 640px) {
+  .grid-cards {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+@media (min-width: 1024px) {
+  .grid-cards {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+/* Utilities */
+.brutal-shadow-sm {
+  box-shadow: var(--shadow-sm);
+}
+.brutal-shadow-lg {
+  box-shadow: var(--shadow-lg);
+}
+.border-3 {
+  border-width: 3px !important;
+}
+
+/* Header hero embellishments (optional) */
+.badge-corner {
+  position: absolute;
+  inset: auto auto -1rem -1rem;
+  background: $brutal-green;
+  border: 3px solid $border-color;
+  border-radius: 999px;
+  padding: 0.25rem 0.6rem;
+  box-shadow: 2px 2px 0 #000;
+  font-size: 0.85rem;
+}
+
+/* Ensure template look without changing your content */
+figure img {
+  width: 100%;
+  height: auto;
+}

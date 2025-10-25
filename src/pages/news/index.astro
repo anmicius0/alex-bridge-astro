@@ -1,0 +1,56 @@
+---
+import type { CollectionEntry } from 'astro:content';
+import { getCollection } from 'astro:content';
+import Card from '../../components/molecules/Card.astro';
+import Layout from '../../layouts/Layout.astro';
+import { getEntrySlugs } from '../../lib/contentSlug';
+
+const newsPosts: CollectionEntry<'news'>[] = await getCollection('news');
+
+const sortedPosts = newsPosts.sort(
+  (a, b) =>
+    new Date(b.data.date as any).getTime() -
+    new Date(a.data.date as any).getTime()
+);
+
+// Precompute slugs for the news posts to avoid calling slugFromId during render
+const postSlugMap = getEntrySlugs(sortedPosts);
+---
+
+<Layout title="News - Bridge mit Alexander">
+  <section class="section">
+    <div class="max-w-3xl mx-auto">
+      <div class="text-center mb-15">
+        <h1 class="mb-4">News</h1>
+        <p class="text-lg text-gray-600 md:text-xl">
+          Bridge-Tipps und Neuigkeiten
+        </p>
+      </div>
+
+      {
+        sortedPosts.length > 0 ? (
+          <div class="flex flex-col gap-6">
+            {sortedPosts.map((post) => {
+              const slug = postSlugMap.get(post) ?? '';
+
+              return (
+                <Card
+                  variant="news"
+                  title={post.data.title}
+                  href={`/news/${slug}`}
+                  date={post.data.date}
+                  showArrow={true}
+                />
+              );
+            })}
+          </div>
+        ) : (
+          <div class="p-10 text-center card">
+            <h3 class="mb-2 text-xl font-bold">Keine Beiträge verfügbar</h3>
+            <p>Schauen Sie bald wieder vorbei!</p>
+          </div>
+        )
+      }
+    </div>
+  </section>
+</Layout>

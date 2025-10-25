@@ -1,0 +1,118 @@
+---
+import { getCollection, type CollectionEntry } from 'astro:content';
+import Card from '../../components/molecules/Card.astro';
+import Layout from '../../layouts/Layout.astro';
+import { getEntrySlugs } from '../../lib/contentSlug';
+
+const holidays: CollectionEntry<'holiday'>[] = await getCollection('holiday');
+
+// Get current time
+const now = new Date().getTime();
+
+// Separate holidays into upcoming and past based on start_date
+const upcomingHolidays = holidays
+  .filter((holiday) => {
+    const startDate = new Date(holiday.data.start_date).getTime();
+    return startDate >= now;
+  })
+  .sort(
+    (a, b) =>
+      new Date(a.data.start_date).getTime() -
+      new Date(b.data.start_date).getTime()
+  );
+
+const pastHolidays = holidays
+  .filter((holiday) => {
+    const startDate = new Date(holiday.data.start_date).getTime();
+    return startDate < now;
+  })
+  .sort(
+    (a, b) =>
+      new Date(b.data.start_date).getTime() -
+      new Date(a.data.start_date).getTime()
+  );
+
+// Precompute slugs for holidays to avoid runtime slug computation
+const holidaySlugMap = getEntrySlugs(
+  [...upcomingHolidays, ...pastHolidays],
+  'holiday'
+);
+---
+
+<Layout title="Reisen - Bridge mit Alexander">
+  <section class="section">
+    <div class="max-w-4xl mx-auto">
+      <div class="text-center mb-15">
+        <h1 class="mb-4">Reisen</h1>
+        <p class="text-lg text-gray-600 md:text-xl">
+          Entdecken Sie unsere geplanten Brückenreisen
+        </p>
+      </div>
+
+      {/* Upcoming Holidays Section */}
+      {
+        upcomingHolidays.length > 0 && (
+          <>
+            <div class="mb-10 text-center">
+              <h2 class="mb-4 text-3xl md:text-4xl">Kommende Reisen</h2>
+            </div>
+            <div class="flex flex-col max-w-2xl gap-6 mx-auto mb-16">
+              {upcomingHolidays.map((holiday) => {
+                const slug = holidaySlugMap.get(holiday) ?? '';
+                return (
+                  <Card
+                    variant="holiday"
+                    title={holiday.data.title}
+                    href={`/holiday/${slug}`}
+                    image={holiday.data.image}
+                    dateRange={{
+                      start: holiday.data.start_date,
+                      end: holiday.data.end_date,
+                    }}
+                  />
+                );
+              })}
+            </div>
+          </>
+        )
+      }
+
+      {/* Past Holidays Section */}
+      {
+        pastHolidays.length > 0 && (
+          <>
+            <div class="mb-10 text-center">
+              <h2 class="mb-4 text-3xl md:text-4xl">Vergangene Reisen</h2>
+            </div>
+            <div class="flex flex-col max-w-2xl gap-6 mx-auto">
+              {pastHolidays.map((holiday) => {
+                const slug = holidaySlugMap.get(holiday) ?? '';
+                return (
+                  <Card
+                    variant="holiday"
+                    title={holiday.data.title}
+                    href={`/holiday/${slug}`}
+                    image={holiday.data.image}
+                    dateRange={{
+                      start: holiday.data.start_date,
+                      end: holiday.data.end_date,
+                    }}
+                  />
+                );
+              })}
+            </div>
+          </>
+        )
+      }
+
+      {
+        upcomingHolidays.length === 0 && pastHolidays.length === 0 && (
+          <div class="p-10 text-center card">
+            <h3 class="mb-2 text-xl font-bold">Keine Reisen verfügbar</h3>
+            <p>Schauen Sie bald wieder vorbei!</p>
+          </div>
+        )
+      }
+    </div>
+  </section>
+</Layout>

@@ -1,0 +1,29 @@
+---
+/**
+ * DateDisplay Component
+ * Displays dates in German locale (de-DE) format
+ *
+ * Usage:
+ * <DateDisplay date={new Date()} />
+ * <DateDisplay date="2024-10-23" />
+ */
+
+interface Props {
+  date: Date | string;
+  class?: string;
+}
+
+const { date, class: extraClass = '' } = Astro.props;
+
+const formattedDate = new Date(date).toLocaleDateString('de-DE', {
+  year: 'numeric',
+  month: 'long',
+  day: 'numeric',
+});
+---
+
+<time datetime={new Date(date).toISOString().split('T')[0]} class={extraClass}>
+  {formattedDate}
+</time>
+
+<style></style>

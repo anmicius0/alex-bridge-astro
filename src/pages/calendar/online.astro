@@ -1,0 +1,39 @@
+---
+import ical from 'node-ical';
+import SectionHeader from '../../components/atoms/SectionHeader.astro';
+import Calendar from '../../components/Calendar';
+import Layout from '../../layouts/Layout.astro';
+
+const ICSURL =
+  'https://calendar.google.com/calendar/ical/b7ba0af741653fd2b3b03a3d9f12b50c9ca0068deae2b8fa197ed24153dd1b9a%40group.calendar.google.com/public/basic.ics';
+
+const data = await ical.async.fromURL(ICSURL);
+
+const events = Object.values(data)
+  .filter((e: any) => e?.type === 'VEVENT')
+  .map((e: any) => ({
+    id: e.uid,
+    title: e.summary,
+    start: e.start?.toISOString?.() || '',
+    end: e.end?.toISOString?.() || '',
+    allDay: false,
+    extendedProps: {
+      description: e.description,
+      location: e.location,
+    },
+  }))
+  .filter((e) => e.start && e.title);
+---
+
+<Layout title="Bridge-Kursplan">
+  <section class="section">
+    <SectionHeader
+      title="Bridge-Kursplan"
+      description="Durchsuchen Sie den Zeitplan für bevorstehende Bridge-Kurse. Alle Sitzungen finden live statt und sind interaktiv."
+    />
+
+    <div class="max-w-4xl mx-auto mt-8">
+      <Calendar events={events} client:load />
+    </div>
+  </section>
+</Layout>

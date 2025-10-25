@@ -1,0 +1,77 @@
+---
+// src/pages/user/register.astro
+import Layout from '../../layouts/Layout.astro';
+import Button from '../../components/atoms/Button.astro';
+import Input from '../../components/atoms/Input.astro';
+---
+
+<Layout title="Registrieren">
+  <section class="section">
+    <div class="max-w-md mx-auto">
+      <div class="card p-8">
+        <h1 class="mb-4 text-3xl text-center">Konto erstellen</h1>
+        <p class="mb-6 text-center">
+          Bereits registriert? <a
+            href="/user/login"
+            class="text-brutalBlue font-semibold hover:underline">Anmelden</a
+          >
+        </p>
+
+        <form
+          id="registerForm"
+          method="POST"
+          action="/api/auth/register"
+          class="flex flex-col gap-4"
+        >
+          <Input id="email" name="email" label="E-Mail" type="email" required />
+          <Input
+            id="password"
+            name="password"
+            label="Passwort"
+            type="password"
+            required
+          />
+          <Button text="Registrieren" type="submit" block />
+          <p id="error" class="hidden text-red-600 text-sm"></p>
+        </form>
+      </div>
+    </div>
+  </section>
+</Layout>
+
+<script>
+  const form = document.getElementById('registerForm') as HTMLFormElement;
+  const errorEl = document.getElementById('error') as HTMLParagraphElement;
+
+  form.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    errorEl.classList.add('hidden');
+
+    const formData = new FormData(form);
+    const email = formData.get('email')?.toString() || '';
+    const password = formData.get('password')?.toString() || '';
+
+    if (!email || !password) {
+      errorEl.textContent = 'Email and password are required';
+      errorEl.classList.remove('hidden');
+      return;
+    }
+
+    try {
+      const res = await fetch('/api/auth/register', {
+        method: 'POST',
+        body: formData,
+      });
+      if (!res.ok) {
+        const text = await res.text();
+        errorEl.textContent = `${text} (Fehler ${res.status})`;
+        errorEl.classList.remove('hidden');
+        return;
+      }
+      window.location.href = '/user/login';
+    } catch (err: any) {
+      errorEl.textContent = err?.message || String(err);
+      errorEl.classList.remove('hidden');
+    }
+  });
+</script>

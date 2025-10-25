@@ -1,0 +1,276 @@
+---
+import { ClientRouter } from 'astro:transitions';
+import Footer from '../components/molecules/Footer.astro';
+import Header from '../components/molecules/Header.astro';
+import '../styles/global.css';
+
+const { title } = Astro.props;
+---
+
+<!doctype html>
+<html lang="de">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <ClientRouter />
+    <title>{title}</title>
+  </head>
+  <body class="m-0 bg-white font-display">
+    <!-- Page transition overlay -->
+    <div
+      id="page-transition"
+      class="page-transition transition-persist transition-overlay"
+    >
+    </div>
+
+    <Header />
+    <main class="container-b">
+      <slot />
+    </main>
+    <Footer />
+
+    <script is:inline>
+      // Page Transition Script: Handles smooth transitions with overlay effect.
+      // Flow: Cover old page, swap content, reveal new page.
+      // Handles back/forward nav, cache restoration, initial load, and timeouts.
+
+      // Timing constants (ms)
+      const ENTER_MS = 700; // Overlay cover duration
+      const EXIT_MS = 700; // Overlay reveal duration
+      const MAX_TRANSITION_TIME = 2000; // Safety timeout
+
+      // State
+      let isTransitioning = false;
+      let transitionTimeout = null;
+
+      // DOM Helpers
+
+      function getOverlay() {
+        return document.getElementById('page-transition');
+      }
+
+      function resetOverlay() {
+        const overlay = getOverlay();
+        if (!overlay) return;
+        overlay.classList.remove('sweep-in', 'sweep-out');
+        overlay.style.removeProperty('--enter-ms');
+        overlay.style.removeProperty('--exit-ms');
+        overlay.style.transform = 'translateX(-100%) skewX(-5deg)';
+      }
+
+      function clearTransitionTimeout() {
+        if (transitionTimeout) {
+          clearTimeout(transitionTimeout);
+          transitionTimeout = null;
+        }
+      }
+
+      function resetTransitionState() {
+        clearTransitionTimeout();
+        isTransitioning = false;
+        resetOverlay();
+      }
+
+      function setSafetyTimeout() {
+        clearTransitionTimeout();
+        transitionTimeout = setTimeout(() => {
+          console.warn('Transition timeout - forcing reset');
+          resetTransitionState();
+        }, MAX_TRANSITION_TIME);
+      }
+
+      // Animation Functions
+
+      function playTransitionEnter(enterMs = ENTER_MS) {
+        const overlay = getOverlay();
+        if (!overlay) return Promise.resolve();
+        resetOverlay();
+        void overlay.offsetWidth;
+        overlay.style.setProperty('--enter-ms', enterMs + 'ms');
+        overlay.classList.add('sweep-in');
+        return new Promise((resolve) => {
+          const onEnd = () => {
+            overlay.removeEventListener('animationend', onEnd);
+            resolve();
+          };
+          overlay.addEventListener('animationend', onEnd);
+          setTimeout(() => {
+            overlay.removeEventListener('animationend', onEnd);
+            resolve();
+          }, enterMs + 100);
+        });
+      }
+
+      function playTransitionExit(exitMs = EXIT_MS) {
+        const overlay = getOverlay();
+        if (!overlay) return Promise.resolve();
+        overlay.classList.remove('sweep-in');
+        overlay.style.transform = 'translateX(0) skewX(-5deg)';
+        void overlay.offsetWidth;
+        overlay.style.setProperty('--exit-ms', exitMs + 'ms');
+        overlay.classList.add('sweep-out');
+        return new Promise((resolve) => {
+          setTimeout(() => {
+            resetOverlay();
+            resolve();
+          }, exitMs + 50);
+        });
+      }
+
+      // Astro Integration
+
+      document.addEventListener('astro:before-preparation', (e) => {
+        if (isTransitioning) {
+          console.warn('Transition already in progress');
+          return;
+        }
+        e.preventDefault();
+        isTransitioning = true;
+        setSafetyTimeout();
+        playTransitionEnter(ENTER_MS).then(() => {
+          window.dispatchEvent(new Event('astro:continue-preparation'));
+        });
+      });
+
+      document.addEventListener('astro:after-swap', () => {
+        if (!isTransitioning) return;
+        playTransitionExit(EXIT_MS).then(() => {
+          resetTransitionState();
+        });
+      });
+
+      document.addEventListener('astro:page-load', () => {
+        if (isTransitioning) {
+          playTransitionExit(EXIT_MS).then(() => {
+            resetTransitionState();
+          });
+        }
+      });
+
+      // Browser Navigation Handling
+
+      window.addEventListener('popstate', () => {
+        if (isTransitioning) {
+          console.log('Browser navigation during transition - resetting');
+          resetTransitionState();
+        }
+      });
+
+      window.addEventListener('pageshow', (event) => {
+        if (event.persisted) {
+          console.log('Page restored from cache - resetting');
+          resetTransitionState();
+        }
+      });
+
+      document.addEventListener('visibilitychange', () => {
+        if (document.visibilityState === 'visible' && isTransitioning) {
+          console.log('Page visible with active transition - resetting');
+          resetTransitionState();
+        }
+      });
+
+      // Initial Load Animation
+
+      if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', () => {
+          const overlay = getOverlay();
+          if (!overlay) return;
+          overlay.style.transform = 'translateX(0) skewX(-5deg)';
+          requestAnimationFrame(() => playTransitionExit(EXIT_MS));
+        });
+      } else {
+        const overlay = getOverlay();
+        if (overlay) {
+          overlay.style.transform = 'translateX(0) skewX(-5deg)';
+          requestAnimationFrame(() => playTransitionExit(EXIT_MS));
+        }
+      }
+    </script>
+
+    <!-- Smooth Scroll Script -->
+    <script>
+      import {
+        cleanupSmoothScroll,
+        initSmoothScroll,
+      } from '../lib/smoothScroll';
+
+      // Init on load
+      initSmoothScroll();
+
+      // Re-init after transitions
+      document.addEventListener('astro:after-swap', () => {
+        initSmoothScroll();
+      });
+
+      // Cleanup before transitions
+      document.addEventListener('astro:before-preparation', () => {
+        cleanupSmoothScroll();
+      });
+    </script>
+
+    <style>
+      /* Page Transition Overlay Styles */
+
+      .page-transition {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 140vw;
+        height: 100vh;
+        background: #fff;
+        border-right: 3px solid #000;
+        z-index: 9999;
+        transform: translateX(-100%) skewX(-5deg);
+        transform-origin: top left;
+        pointer-events: none;
+        will-change: transform;
+      }
+
+      .page-transition.sweep-in {
+        animation: sweepIn var(--enter-ms, 700ms) cubic-bezier(0.65, 0, 0.35, 1)
+          forwards;
+        border-right: 3px solid #000;
+      }
+
+      .page-transition.sweep-out {
+        animation: sweepOut var(--exit-ms, 700ms) cubic-bezier(0.65, 0, 0.35, 1)
+          forwards;
+        border-left: 3px solid #000;
+      }
+
+      @keyframes sweepIn {
+        from {
+          transform: translateX(-100%) skewX(-5deg);
+        }
+        to {
+          transform: translateX(0) skewX(-5deg);
+        }
+      }
+
+      @keyframes sweepOut {
+        from {
+          transform: translateX(0) skewX(-5deg);
+        }
+        to {
+          transform: translateX(100%) skewX(-5deg);
+        }
+      }
+
+      /* Disable default View Transitions */
+      html:has(:root) {
+        view-transition-name: none;
+      }
+
+      html::view-transition-old(root),
+      html::view-transition-new(root) {
+        animation-duration: 0ms !important;
+      }
+
+      /* Disable native smooth scroll */
+      html {
+        scroll-behavior: auto;
+      }
+    </style>
+  </body>
+</html>

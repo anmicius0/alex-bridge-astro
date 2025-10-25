@@ -1,0 +1,57 @@
+---
+import type { CollectionEntry } from 'astro:content';
+import { getCollection } from 'astro:content';
+import Button from '../../components/atoms/Button.astro';
+import Card from '../../components/molecules/Card.astro';
+import Layout from '../../layouts/Layout.astro';
+
+const fileDocuments: CollectionEntry<'file'>[] = await getCollection('file');
+---
+
+<Layout title="Dateien - Bridge mit Alexander">
+  <section class="section">
+    <div class="max-w-4xl mx-auto">
+      <div class="text-center mb-15">
+        <h1 class="mb-4">Dateien</h1>
+        <p class="text-lg text-gray-600 md:text-xl">
+          Herunterladen von Bridge-Materialien und Dokumenten
+        </p>
+      </div>
+
+      {
+        fileDocuments.length > 0 ? (
+          <div class="flex flex-col gap-8">
+            {fileDocuments.map((doc) => (
+              <Card variant="file" title={doc.data.title} class="md:p-8">
+                {doc.data.attachments && doc.data.attachments.length > 0 && (
+                  <div class="flex flex-wrap gap-3">
+                    {doc.data.attachments.map((file: string) => {
+                      const fileName = file.split('/').pop() || file;
+                      return (
+                        <Button
+                          text={fileName}
+                          download={true}
+                          href={file}
+                          target="_blank"
+                          icon="📄"
+                        />
+                      );
+                    })}
+                  </div>
+                )}
+              </Card>
+            ))}
+          </div>
+        ) : (
+          <div class="p-10 text-center card">
+            <h3 class="mb-2 text-xl font-bold">Keine Dateien verfügbar</h3>
+            <p>
+              Derzeit sind keine Dateien zum Herunterladen verfügbar. Schauen
+              Sie bald wieder vorbei!
+            </p>
+          </div>
+        )
+      }
+    </div>
+  </section>
+</Layout>

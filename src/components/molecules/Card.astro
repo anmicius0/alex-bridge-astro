@@ -1,0 +1,96 @@
+---
+// src/components/molecules/Card.astro
+import { Image } from 'astro:assets';
+import DateDisplay from '../atoms/DateDisplay.astro';
+
+interface Props {
+  variant?: 'news' | 'holiday' | 'file';
+  title: string;
+  href?: string;
+  date?: Date | string;
+  dateRange?: { start: Date | string; end: Date | string };
+  description?: string;
+  image?: string;
+  showArrow?: boolean;
+  class?: string;
+}
+
+const {
+  variant = 'news',
+  title,
+  href,
+  date,
+  dateRange,
+  description,
+  image,
+  showArrow = false,
+  class: extraClass,
+} = Astro.props;
+
+const Tag = href ? 'a' : 'div';
+const cardClass =
+  variant === 'news'
+    ? 'card p-6 flex items-center gap-4 group'
+    : 'card p-6 block';
+---
+
+<Tag href={href} class={`${cardClass} ${extraClass}`}>
+  {
+    variant === 'holiday' &&
+      image &&
+      (image.startsWith('http') ? (
+        <img
+          src={image}
+          alt={title}
+          class="object-cover w-full h-48 mb-4 rounded-lg"
+        />
+      ) : (
+        <Image
+          src={image}
+          alt={title}
+          class="object-cover w-full h-48 mb-4 rounded-lg"
+          width={400}
+          height={192}
+        />
+      ))
+  }
+  <div class={variant === 'news' ? 'flex-1 min-w-0' : ''}>
+    {
+      variant === 'file' ? (
+        <h2 class="mb-4 text-2xl font-bold break-words">{title}</h2>
+      ) : (
+        <h3
+          class={`mb-2 text-xl font-bold break-words ${
+            variant === 'news'
+              ? 'group-hover:text-brutalBlue transition-colors'
+              : ''
+          }`}
+        >
+          {title}
+        </h3>
+      )
+    }
+    {
+      date && (
+        <p class="text-sm text-gray-500">
+          <DateDisplay date={date} />
+        </p>
+      )
+    }
+    {
+      dateRange && (
+        <p class="mb-2 text-sm text-gray-500">
+          <DateDisplay date={dateRange.start} /> -{' '}
+          <DateDisplay date={dateRange.end} />
+        </p>
+      )
+    }
+    {description && <p class="text-gray-600">{description}</p>}
+    <slot />
+  </div>
+  {
+    showArrow && (
+      <i class="text-2xl transition-transform ri-arrow-right-line group-hover:translate-x-1" />
+    )
+  }
+</Tag>

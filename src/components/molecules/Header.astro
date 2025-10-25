@@ -1,0 +1,93 @@
+---
+// src/components/Header.astro
+import MenuButton from '../atoms/MenuButton.astro';
+
+interface Props {
+  class?: string;
+}
+
+const { class: extraClass = '' } = Astro.props;
+
+const links = [
+  { name: 'News', path: '/news' },
+  { name: 'Reisen', path: '/holiday' },
+  { name: 'Online-Kurse', path: '/calendar/online' },
+  { name: 'Unterlagen', path: '/file' },
+  // { name: 'Dashboard', path: '/user/dashboard' },
+];
+
+const pathname = Astro.url.pathname;
+const isActive = (p: string) => pathname === p || pathname.startsWith(p + '/');
+---
+
+<header class={`bg-white ${extraClass}`}>
+  <nav
+    class="flex items-center justify-between max-w-4xl px-4 py-6 mx-auto lg:max-w-none lg:px-10 lg:py-10"
+  >
+    <a href="/" class="flex items-center gap-3 group">
+      <div
+        class="flex items-center justify-center w-12 h-12 md:w-14 md:h-14 text-xl md:text-2xl leading-none rounded-md border-[3px] border-black bg-brutalPink shadow-brutalSm group-hover:shadow-brutal transition"
+      >
+        B
+      </div>
+      <p class="text-base font-semibold md:text-lg">Bridge mit Alexander</p>
+    </a>
+
+    <ul class="items-center hidden gap-6 lg:flex">
+      {
+        links.map((item) => (
+          <li>
+            <a
+              href={item.path}
+              class={`rounded-md border border-black px-5 py-2 transition ease-in-out
+              ${isActive(item.path) ? 'font-extrabold' : ''}
+              hover:border-[3px] hover:shadow-brutal`}
+            >
+              {item.name}
+            </a>
+          </li>
+        ))
+      }
+    </ul>
+
+    <div class="z-40 lg:hidden">
+      <MenuButton />
+
+      <div
+        id="menu-content"
+        class="fixed top-0 left-0 w-full h-full bg-white border-b-[3px] border-black -translate-x-full transition-transform duration-300 ease-in-out"
+      >
+        <div class="flex items-center p-6 border-b-[3px] border-black">
+          <h3 class="flex-1 font-black uppercase">Menu</h3>
+          <button
+            id="menu-close"
+            aria-label="Close menu"
+            class="text-3xl leading-none">×</button
+          >
+        </div>
+        <ul class="flex flex-col items-center justify-center gap-6 py-10">
+          {
+            links.map((item) => (
+              <li class="w-full text-center">
+                <a
+                  href={item.path}
+                  class={`inline-block rounded-md border border-black px-5 py-3 text-xl font-bold transition
+                  ${isActive(item.path) ? 'underline' : ''}
+                  hover:border-[3px] hover:shadow-brutal`}
+                >
+                  {item.name}
+                </a>
+              </li>
+            ))
+          }
+        </ul>
+      </div>
+    </div>
+  </nav>
+</header>
+
+<script>
+  import { initMobileMenu } from '../../lib/mobileMenu';
+
+  initMobileMenu();
+</script>
