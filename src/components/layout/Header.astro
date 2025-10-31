@@ -1,0 +1,653 @@
+---
+// Top navigation with desktop and mobile menus.
+// Desktop: supports hover/click/focus dropdowns with accessible ARIA and keyboard controls.
+// Mobile: handled by the mobile menu overlay controller.
+
+import MenuButton from './MenuButton.astro';
+
+interface Props {
+  class?: string;
+}
+
+const { class: extraClass = '' } = Astro.props;
+
+// Navigation structure with optional children for dropdowns.
+const links = [
+  { name: 'News', path: '/news' },
+  {
+    name: 'Kurse',
+    path: '/calendar/online',
+    children: [{ name: 'Online-Kurse', path: '/calendar/online' }],
+  },
+  {
+    name: 'Reisen',
+    path: '/holiday',
+  },
+  { name: 'Quiz', path: '/quiz' },
+  { name: 'Unterlagen', path: '/file' },
+];
+
+const pathname = Astro.url.pathname;
+
+// Utilities to determine active states for styling/ARIA.
+const isActive = (p: string) => pathname === p || pathname.startsWith(p + '/');
+const hasActiveChild = (children?: Array<{ path: string }>) =>
+  children?.some((child) => isActive(child.path)) ?? false;
+---
+
+<header class={`bg-white ${extraClass}`}>
+  <nav
+    class="flex items-center justify-between max-w-4xl px-4 py-6 mx-auto lg:max-w-none lg:px-10 lg:py-10"
+  >
+    <!-- Logo -->
+    <a href="/" class="flex items-center gap-3 group">
+      <div
+        class="flex items-center justify-center w-10 h-10 text-lg leading-none transition border-2 border-black rounded-md shadow-none md:w-12 md:h-12 md:text-xl bg-brutalPink group-hover:shadow-brutalSm"
+      >
+        B
+      </div>
+      <p class="text-sm font-medium text-gray-700 md:text-base">
+        Bridge mit Alexander
+      </p>
+    </a>
+
+    <!-- Desktop Navigation (lg+) -->
+    <!-- Uses hover, click, and keyboard to open dropdowns. -->
+    <ul class="items-center hidden gap-6 lg:flex">
+      {
+        links.map((item) => (
+          <li class="relative nav-item">
+            {/* Dropdown item if children exist */}
+            {item.children ? (
+              <div class="dropdown-wrapper">
+                {/* Trigger uses aria-haspopup and aria-expanded; JS will update expanded state */}
+                <button
+                  class={`nav-link nav-link-base dropdown-trigger ${isActive(item.path) || hasActiveChild(item.children) ? 'nav-link-active' : ''}`}
+                  aria-expanded="false"
+                  aria-haspopup="true"
+                  type="button"
+                >
+                  <span class="nav-link-text">{item.name}</span>
+                  <i class="nav-dropdown-icon ri-arrow-down-s-line" />
+                </button>
+
+                {/* Dropdown menu is absolutely positioned under the trigger on desktop */}
+                <div class="dropdown-menu" role="menu">
+                  <ul class="dropdown-list">
+                    {item.children.map((child) => (
+                      <li role="none">
+                        <a
+                          href={child.path}
+                          role="menuitem"
+                          class={`dropdown-item ${isActive(child.path) ? 'dropdown-item-active' : ''}`}
+                        >
+                          {child.name}
+                        </a>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              </div>
+            ) : (
+              // Regular link when no children
+              <a
+                href={item.path}
+                class={`nav-link nav-link-base ${isActive(item.path) ? 'nav-link-active' : ''}`}
+              >
+                <span class="nav-link-text">{item.name}</span>
+              </a>
+            )}
+          </li>
+        ))
+      }
+    </ul>
+
+    <!-- Mobile Menu Button (shown on < lg) -->
+    <div class="z-40 lg:hidden">
+      <MenuButton />
+
+      <!-- Mobile Menu Overlay -->
+      <div
+        id="menu-content"
+        class="fixed top-0 left-0 w-full h-full bg-white border-b-[3px] border-black -translate-x-full transition-transform duration-300 ease-in-out overflow-y-auto"
+      >
+        {/* Mobile menu header */}
+        <div
+          class="flex items-center p-6 border-b-[3px] border-black sticky top-0 bg-white z-10"
+        >
+          <h3 class="flex-1 font-black uppercase">Menu</h3>
+          <button
+            id="menu-close"
+            aria-label="Close menu"
+            class="text-3xl leading-none"
+            type="button"
+          >
+            ×
+          </button>
+        </div>
+
+        {
+          /* Mobile menu items with expandable dropdowns (handled by mobile-menu controller) */
+        }
+        <ul class="flex flex-col">
+          {
+            links.map((item, index) => (
+              <li class="w-full mobile-nav-item">
+                {item.children ? (
+                  <div class="mobile-dropdown-wrapper">
+                    <button
+                      class={`mobile-nav-link ${isActive(item.path) || hasActiveChild(item.children) ? 'mobile-nav-link-active' : ''}`}
+                      data-dropdown-toggle={`mobile-dropdown-${index}`}
+                      aria-expanded="false"
+                      type="button"
+                    >
+                      <span class="mobile-nav-text">{item.name}</span>
+                      <i class="mobile-dropdown-icon ri-arrow-down-s-line" />
+                    </button>
+
+                    {/* Collapsible dropdown content - starts collapsed with max-height 0 */}
+                    <div
+                      id={`mobile-dropdown-${index}`}
+                      class="mobile-dropdown-content"
+                      style="max-height: 0;"
+                    >
+                      <ul class="mobile-dropdown-list">
+                        {item.children.map((child) => (
+                          <li>
+                            <a
+                              href={child.path}
+                              class={`mobile-dropdown-item ${isActive(child.path) ? 'mobile-dropdown-item-active' : ''}`}
+                            >
+                              {child.name}
+                            </a>
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  </div>
+                ) : (
+                  <a
+                    href={item.path}
+                    class={`mobile-nav-link ${isActive(item.path) ? 'mobile-nav-link-active' : ''}`}
+                  >
+                    <span class="mobile-nav-text">{item.name}</span>
+                  </a>
+                )}
+              </li>
+            ))
+          }
+        </ul>
+      </div>
+    </div>
+  </nav>
+</header>
+
+<script>
+  // Initialize the mobile menu overlay controller.
+  import { initMobileMenu } from '../../lib/ui/mobile-menu';
+  initMobileMenu();
+
+  // Desktop dropdown controller: hover, click, keyboard.
+  // - Only active at lg+ via matchMedia to avoid conflicts with the hidden desktop nav on mobile.
+  // - Uses a simple "open" class on the wrapper and updates aria-expanded on the trigger.
+  (function () {
+    const MEDIA = '(min-width: 1024px)'; // Tailwind's lg breakpoint default
+    let mql: MediaQueryList | null = null;
+
+    // Check if the viewport is at or above the desktop breakpoint.
+    function isDesktop(): boolean {
+      if (!mql) mql = window.matchMedia(MEDIA);
+      return mql.matches;
+    }
+
+    // Helper to iterate over all dropdown wrappers with their trigger and menu.
+    function eachWrapper(
+      cb: (
+        wrapper: HTMLElement,
+        trigger: HTMLElement,
+        menu: HTMLElement
+      ) => void
+    ) {
+      document
+        .querySelectorAll<HTMLElement>('.dropdown-wrapper')
+        .forEach((wrapper) => {
+          const trigger =
+            wrapper.querySelector<HTMLElement>('.dropdown-trigger');
+          const menu = wrapper.querySelector<HTMLElement>('.dropdown-menu');
+          if (trigger && menu) cb(wrapper, trigger, menu);
+        });
+    }
+
+    // Open a dropdown: add "open" class, add .show on the menu and update ARIA.
+    function openDropdown(wrapper: HTMLElement, trigger: HTMLElement) {
+      if (!isDesktop()) return;
+      // Clear any pending close timer
+      clearCloseTimer(wrapper);
+      wrapper.classList.add('open');
+      trigger.setAttribute('aria-expanded', 'true');
+      const menu = wrapper.querySelector<HTMLElement>('.dropdown-menu');
+      if (menu) menu.classList.add('show');
+    }
+
+    // Close a dropdown: remove "open" class, remove .show from the menu and update ARIA.
+    function closeDropdown(wrapper: HTMLElement, trigger: HTMLElement) {
+      wrapper.classList.remove('open');
+      trigger.setAttribute('aria-expanded', 'false');
+      const menu = wrapper.querySelector<HTMLElement>('.dropdown-menu');
+      if (menu) menu.classList.remove('show');
+    }
+
+    // Small delay between mouseleave and closing to allow the cursor to move between trigger and menu
+    const CLOSE_DELAY = 160; // ms
+    const wrapperCloseTimers = new WeakMap<HTMLElement, number>();
+
+    function setCloseTimer(wrapper: HTMLElement, trigger: HTMLElement) {
+      clearCloseTimer(wrapper);
+      const id = window.setTimeout(
+        () => closeDropdown(wrapper, trigger),
+        CLOSE_DELAY
+      );
+      wrapperCloseTimers.set(wrapper, id);
+    }
+
+    function clearCloseTimer(wrapper: HTMLElement) {
+      const existing = wrapperCloseTimers.get(wrapper);
+      if (existing) {
+        window.clearTimeout(existing);
+        wrapperCloseTimers.delete(wrapper);
+      }
+    }
+
+    // Close all open dropdowns.
+    function closeAll() {
+      eachWrapper((wrapper, trigger) => closeDropdown(wrapper, trigger));
+    }
+
+    // Close dropdowns when clicking outside any of them.
+    function handleOutsideClick(e: MouseEvent) {
+      if (!isDesktop()) return;
+      const target = e.target as Node;
+      document
+        .querySelectorAll<HTMLElement>('.dropdown-wrapper.open')
+        .forEach((wrapper) => {
+          if (!wrapper.contains(target)) {
+            const trigger =
+              wrapper.querySelector<HTMLElement>('.dropdown-trigger');
+            if (trigger) closeDropdown(wrapper, trigger);
+          }
+        });
+    }
+
+    // Close all dropdowns on Escape key.
+    function handleEscape(e: KeyboardEvent) {
+      if (!isDesktop()) return;
+      if (e.key === 'Escape') closeAll();
+    }
+
+    // Bind event listeners to a single dropdown wrapper.
+    function bindWrapper(wrapper: HTMLElement) {
+      // Guard against re-binding on Astro page transitions.
+      if (wrapper.dataset.dropdownInitialized === 'true') return;
+      wrapper.dataset.dropdownInitialized = 'true';
+
+      const trigger = wrapper.querySelector<HTMLElement>('.dropdown-trigger');
+      const menu = wrapper.querySelector<HTMLElement>('.dropdown-menu');
+      if (!trigger || !menu) return;
+
+      // Hover opens, mouse leave closes after a short delay to allow moving between
+      // the trigger and the menu without accidental closing.
+      wrapper.addEventListener('mouseenter', () =>
+        openDropdown(wrapper, trigger)
+      );
+      wrapper.addEventListener('mouseleave', () =>
+        setCloseTimer(wrapper, trigger)
+      );
+
+      // Also bind to trigger & menu individually to more robustly handle the gap area.
+      const menuEl = wrapper.querySelector<HTMLElement>('.dropdown-menu');
+      if (menuEl) {
+        trigger.addEventListener('mouseenter', () =>
+          openDropdown(wrapper, trigger)
+        );
+        trigger.addEventListener('mouseleave', () =>
+          setCloseTimer(wrapper, trigger)
+        );
+
+        menuEl.addEventListener('mouseenter', () =>
+          openDropdown(wrapper, trigger)
+        );
+        menuEl.addEventListener('mouseleave', () =>
+          setCloseTimer(wrapper, trigger)
+        );
+      }
+
+      // Focus within keeps it open for keyboard navigation.
+      wrapper.addEventListener('focusin', () => openDropdown(wrapper, trigger));
+      wrapper.addEventListener('focusout', () => {
+        // Close only when focus leaves the entire wrapper.
+        if (!wrapper.contains(document.activeElement)) {
+          closeDropdown(wrapper, trigger);
+        }
+      });
+
+      // Click on trigger toggles the dropdown (useful for touch/pen on large screens).
+      trigger.addEventListener('click', (e) => {
+        if (!isDesktop()) return;
+        e.preventDefault();
+        const isOpen = wrapper.classList.contains('open');
+        if (isOpen) {
+          closeDropdown(wrapper, trigger);
+        } else {
+          // Close other open dropdowns to avoid multiple stacks.
+          document
+            .querySelectorAll<HTMLElement>('.dropdown-wrapper.open')
+            .forEach((w) => {
+              if (w !== wrapper) {
+                const t = w.querySelector<HTMLElement>('.dropdown-trigger');
+                if (t) closeDropdown(w, t);
+              }
+            });
+          openDropdown(wrapper, trigger);
+        }
+      });
+
+      // Keyboard navigation on trigger: Enter/Space to toggle, ArrowDown to open and focus first item.
+      trigger.addEventListener('keydown', (e) => {
+        if (!isDesktop()) return;
+        const key = e.key;
+        if (key === 'Enter' || key === ' ') {
+          e.preventDefault();
+          const isOpen = wrapper.classList.contains('open');
+          if (isOpen) {
+            closeDropdown(wrapper, trigger);
+          } else {
+            openDropdown(wrapper, trigger);
+            // Focus the first menu item if available.
+            const first = menu.querySelector<HTMLElement>('.dropdown-item');
+            if (first) first.focus();
+          }
+        } else if (key === 'ArrowDown') {
+          e.preventDefault();
+          openDropdown(wrapper, trigger);
+          const first = menu.querySelector<HTMLElement>('.dropdown-item');
+          if (first) first.focus();
+        } else if (key === 'Escape') {
+          closeDropdown(wrapper, trigger);
+          trigger.focus();
+        }
+      });
+
+      // Escape from within the menu closes it and returns focus to the trigger.
+      menu.addEventListener('keydown', (e) => {
+        if (!isDesktop()) return;
+        if (e.key === 'Escape') {
+          e.preventDefault();
+          closeDropdown(wrapper, trigger);
+          trigger.focus();
+        }
+      });
+    }
+
+    // Initialize all desktop dropdowns by binding event handlers.
+    function initDesktopDropdowns() {
+      eachWrapper((wrapper) => bindWrapper(wrapper));
+    }
+
+    // Initial bind on script load.
+    initDesktopDropdowns();
+
+    // Re-bind after Astro view transitions swap the DOM.
+    document.addEventListener('astro:after-swap', initDesktopDropdowns);
+
+    // Global listeners for outside clicks and Escape key.
+    document.addEventListener('click', handleOutsideClick);
+    document.addEventListener('keydown', handleEscape);
+
+    // Close all dropdowns when resizing down to mobile/tablet to prevent orphaned open states.
+    window.addEventListener('resize', () => {
+      if (!isDesktop()) closeAll();
+    });
+  })();
+</script>
+
+<style>
+  /* ============================================================
+     DESKTOP NAVIGATION STYLES (lg+ only)
+     Base styles for nav links, dropdowns, and interactions
+     ============================================================ */
+
+  @media (min-width: 1024px) {
+    /* Base navigation link styles - shared by regular links and dropdown triggers */
+    .nav-link-base {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+
+      /* Spacing and sizing */
+      padding: 0.5rem 1.25rem;
+      min-height: 44px; /* Ensures touch-friendly size */
+
+      /* Brutalist border styling */
+      border: 3px solid var(--border);
+      border-radius: 0.375rem;
+      background: white;
+
+      /* Typography */
+      font-size: 1rem;
+      font-weight: 500;
+      color: black;
+      text-decoration: none;
+      white-space: nowrap;
+
+      /* Smooth transitions */
+      transition:
+        box-shadow 0.2s ease,
+        transform 0.1s ease;
+
+      /* Remove default button styling for dropdown triggers */
+      cursor: pointer;
+      user-select: none;
+    }
+
+    /* Hover effect - consistent for all nav items */
+    .nav-link-base:hover {
+      /* softer shadow so dropdown doesn't look too heavy */
+      box-shadow: 4px 4px 0 var(--border);
+      transform: translate(-2px, -2px);
+    }
+
+    /* Active/pressed effect */
+    .nav-link-base:active {
+      box-shadow: 2px 2px 0 var(--border);
+      transform: translate(1px, 1px);
+    }
+
+    /* Focus state for accessibility */
+    .nav-link-base:focus {
+      outline: 2px solid var(--border);
+      outline-offset: 3px;
+    }
+
+    .nav-link-base:focus-visible {
+      outline: 3px solid var(--border);
+      outline-offset: 3px;
+    }
+
+    /* Text content wrapper */
+    .nav-link-text {
+      display: inline-block;
+    }
+
+    /* Active state styling - when on current page */
+    .nav-link-active {
+      font-weight: 700;
+      background: var(--yellow);
+    }
+
+    .nav-link-active:hover {
+      background: var(--yellow);
+    }
+
+    /* Dropdown trigger specific styles */
+    .dropdown-trigger {
+      /* Additional spacing for icon */
+      padding-right: 2.5rem;
+    }
+
+    /* Dropdown arrow icon - positioned absolutely to not affect layout */
+    .nav-dropdown-icon {
+      position: absolute;
+      right: 0.75rem;
+      top: 50%;
+      transform: translateY(-50%);
+      font-size: 1.2em;
+      transition: transform 0.2s ease;
+      pointer-events: none; /* Prevents interference with hover/click */
+    }
+
+    /* Rotate arrow when dropdown is open */
+    .dropdown-wrapper.open .nav-dropdown-icon {
+      transform: translateY(-50%) rotate(180deg);
+    }
+
+    /* Navigation item container */
+    .nav-item {
+      position: relative;
+    }
+
+    /* Dropdown wrapper */
+    .dropdown-wrapper {
+      position: relative;
+      display: inline-block;
+    }
+
+    /* Dropdown menu container */
+    .dropdown-menu {
+      position: absolute;
+      /* Reduce vertical gap so the cursor doesn't pass through an empty area */
+      top: calc(100% + 0.25rem);
+      left: 0;
+      min-width: 220px;
+
+      background: white;
+      border: 3px solid var(--border);
+      border-radius: 0.75rem;
+      box-shadow: 6px 6px 0 var(--border);
+      z-index: 50;
+
+      /* Hidden by default */
+      display: none;
+      opacity: 0;
+      transform: translateY(-6px);
+      transition:
+        opacity 0.18s ease,
+        transform 0.18s ease;
+
+      /* Prevent clicks when hidden */
+      pointer-events: none;
+    }
+
+    /* Show dropdown when wrapper has .open class (set by JavaScript) */
+    .dropdown-wrapper.open > .dropdown-menu {
+      display: block;
+      opacity: 1;
+      transform: translateY(0);
+      pointer-events: auto;
+    }
+
+    /* Dropdown list container */
+    .dropdown-list {
+      list-style: none;
+      margin: 0;
+      padding: 0.5rem 0;
+    }
+
+    /* Individual dropdown items */
+    .dropdown-item {
+      display: block;
+      padding: 0.75rem 1.25rem;
+      color: black;
+      text-decoration: none;
+      font-weight: 500;
+      font-size: 0.95rem;
+
+      /* Smooth transitions for background and the brutalist lift */
+      transition:
+        background-color 0.12s ease,
+        box-shadow 0.12s ease,
+        transform 0.12s ease;
+    }
+
+    /* Hover state for dropdown items */
+    .dropdown-item:hover {
+      background-color: rgba(242, 207, 150, 0.9); /* soft yellow */
+      box-shadow: 3px 3px 0 var(--border);
+      transform: translate(-1px, -1px);
+    }
+
+    /* Focus state for keyboard navigation */
+    .dropdown-item:focus {
+      outline: 2px solid var(--border);
+      outline-offset: -2px;
+      background-color: var(--blue);
+    }
+
+    /* Rounded corners for first and last items */
+    .dropdown-item:first-child {
+      border-radius: 0.5rem 0.5rem 0 0;
+    }
+
+    .dropdown-item:last-child {
+      border-radius: 0 0 0.5rem 0.5rem;
+    }
+
+    /* Active dropdown item (current page) */
+    .dropdown-item-active {
+      font-weight: 700;
+      background-color: var(--pink);
+      box-shadow: 4px 4px 0 var(--border);
+      transform: none;
+    }
+
+    .dropdown-item-active:hover {
+      background-color: var(--pink);
+    }
+  }
+
+  /* ============================================================
+     ACCESSIBILITY & RESPONSIVE ADJUSTMENTS
+     ============================================================ */
+
+  /* Reduced motion for users who prefer it */
+  @media (prefers-reduced-motion: reduce) {
+    .nav-link-base,
+    .dropdown-menu,
+    .nav-dropdown-icon {
+      transition: none !important;
+    }
+  }
+
+  /* High contrast mode support */
+  @media (prefers-contrast: high) {
+    @media (min-width: 1024px) {
+      .nav-link-base,
+      .dropdown-menu {
+        border-width: 4px;
+      }
+
+      .nav-link-active,
+      .dropdown-item-active {
+        outline: 3px solid #000;
+        outline-offset: -3px;
+      }
+    }
+  }
+
+  /* Ensure touch targets are large enough on mobile */
+  @media (max-width: 1023px) {
+    .nav-link-base {
+      min-height: 48px; /* Larger touch target for mobile */
+    }
+  }
+</style>

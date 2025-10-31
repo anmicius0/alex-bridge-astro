@@ -1,0 +1,72 @@
+---
+import Layout from './Layout.astro';
+
+interface Props {
+  title: string;
+  errorCode: string;
+  errorColor: 'yellow' | 'red';
+  heading: string;
+  message: string;
+}
+
+const { title, errorCode, errorColor, heading, message } = Astro.props;
+
+// Map color to Tailwind class
+const colorClasses = {
+  yellow: 'bg-yellow-300',
+  red: 'bg-red-300',
+};
+---
+
+<Layout {title}>
+  <section class="section">
+    <div class="max-w-2xl mx-auto">
+      <!-- Error Container -->
+      <div class="text-center">
+        <!-- Large Error Code with Brutal Style -->
+        <div class="mb-10 flex justify-center">
+          <div
+            class={`inline-flex items-center justify-center w-32 h-32 md:w-40 md:h-40 text-6xl md:text-8xl leading-none rounded-2xl border-3 border-black ${colorClasses[errorColor]} font-black`}
+            style="box-shadow: var(--shadow-lg); -webkit-text-stroke: 4px white; text-stroke: 4px white; paint-order: stroke fill;"
+          >
+            {errorCode}
+          </div>
+        </div>
+
+        <!-- Error Message -->
+        <h1 class="mb-4 text-3xl md:text-4xl font-extrabold">
+          {heading}
+        </h1>
+
+        <p
+          class="mx-auto mb-12 max-w-md text-base leading-relaxed text-gray-700"
+        >
+          {message}
+        </p>
+
+        <!-- Error-specific Content -->
+        <div class="mb-10 card p-8 md:p-10">
+          <slot />
+        </div>
+
+        <!-- Additional Help -->
+        <p class="text-sm text-gray-600">
+          <slot name="footer" />
+        </p>
+      </div>
+    </div>
+  </section>
+</Layout>
+
+<script>
+  // Handle reload button functionality for error pages
+  document.addEventListener('DOMContentLoaded', () => {
+    const reloadButton = document.querySelector('a[href="#reload"]');
+    if (reloadButton) {
+      reloadButton.addEventListener('click', (e) => {
+        e.preventDefault();
+        location.reload();
+      });
+    }
+  });
+</script>

@@ -1,0 +1,39 @@
+---
+import Button from '../components/ui/Button.astro';
+import ErrorLayout from '../layouts/ErrorLayout.astro';
+---
+
+<ErrorLayout
+  title="500 - Interner Fehler"
+  errorCode="500"
+  errorColor="red"
+  heading="Interner Fehler"
+  message="Es tut uns leid! Es ist ein Fehler auf unserem Server aufgetreten. Alex wurde benachrichtigt und arbeitet an einer Lösung."
+>
+  <p class="mb-6 text-sm font-semibold">Was kannst du tun?</p>
+  <ul class="max-w-xs mx-auto mb-8 space-y-3 text-left text-gray-700">
+    <li class="flex items-start gap-3">
+      <span class="flex-shrink-0 font-bold text-green-500">✓</span>
+      <span>Versuche, die Seite neu zu laden</span>
+    </li>
+    <li class="flex items-start gap-3">
+      <span class="flex-shrink-0 font-bold text-green-500">✓</span>
+      <span>Prüfe deine Internetverbindung</span>
+    </li>
+    <li class="flex items-start gap-3">
+      <span class="flex-shrink-0 font-bold text-green-500">✓</span>
+      <span>Versuche es später erneut</span>
+    </li>
+  </ul>
+  <div class="flex flex-col justify-center gap-4 sm:flex-row">
+    <Button text="Zurück zur Startseite" href="/" variant="primary" size="md" />
+    <Button text="Seite neu laden" href="#reload" variant="primary" size="md" />
+  </div>
+
+  <span slot="footer">
+    Fehler-ID: <code
+      class="px-2 py-1 font-mono text-xs bg-gray-100 border-black rounded border-3"
+      >ERR_500</code
+    >
+  </span>
+</ErrorLayout>

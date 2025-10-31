@@ -1,0 +1,23 @@
+---
+import type { CollectionEntry } from 'astro:content';
+import { getCollection, render } from 'astro:content';
+import ContentLayout from '../../layouts/ContentLayout.astro';
+import { getEntrySlug } from '../../services/content-slug';
+export const prerender = true;
+
+export async function getStaticPaths() {
+  const holidays = await getCollection('holiday');
+  return holidays.map((holiday) => ({
+    params: { slug: getEntrySlug(holiday, 'holiday') },
+    props: { holiday },
+  }));
+}
+
+type Props = { holiday: CollectionEntry<'holiday'> };
+const { holiday } = Astro.props;
+const { Content } = await render(holiday);
+---
+
+<ContentLayout entry={holiday}>
+  <Content />
+</ContentLayout>

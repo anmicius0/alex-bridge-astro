@@ -1,0 +1,33 @@
+---
+import type { CollectionEntry } from 'astro:content';
+import { getCollection } from 'astro:content';
+import ContentList from '../../components/content/ContentList.astro';
+import ListLayout from '../../layouts/ListLayout.astro';
+import { getEntrySlugs } from '../../services/content-slug';
+
+const newsPosts: CollectionEntry<'news'>[] = await getCollection('news');
+
+const sortedPosts = newsPosts.sort(
+  (a, b) =>
+    new Date(String(b.data.date ?? '')).getTime() -
+    new Date(String(a.data.date ?? '')).getTime()
+);
+
+// Precompute slugs for the news posts to avoid calling slugFromId during render
+const postSlugMap = getEntrySlugs(sortedPosts);
+---
+
+<ListLayout
+  pageTitle="News - Bridge mit Alexander"
+  title="News"
+  intro="Bridge-Tipps und Neuigkeiten"
+  maxWidth="max-w-3xl"
+  isEmpty={sortedPosts.length === 0}
+>
+  <ContentList
+    items={sortedPosts}
+    slugMap={postSlugMap}
+    imagePosition="left"
+    showArrow={true}
+  />
+</ListLayout>

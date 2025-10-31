@@ -1,0 +1,52 @@
+---
+import type { CollectionEntry } from 'astro:content';
+import Card from './Card.astro';
+
+type ContentItem =
+  | CollectionEntry<'news'>
+  | CollectionEntry<'holiday'>
+  | CollectionEntry<'quiz'>
+  | CollectionEntry<'file'>;
+
+interface Props {
+  items: ContentItem[];
+  slugMap: Map<any, string>;
+  imagePosition?: 'top' | 'left';
+  showArrow?: boolean;
+  class?: string;
+}
+
+const {
+  items,
+  slugMap,
+  imagePosition = 'top',
+  showArrow = false,
+  class: extraClass = '',
+} = Astro.props;
+---
+
+<div class={`flex flex-col gap-6 ${extraClass}`}>
+  {
+    items.map((item) => {
+      const slug = slugMap.get(item) ?? '';
+      const data = item.data as any; // Use 'any' for simplicity across different collection types
+
+      return (
+        <Card
+          title={data.title}
+          href={`/${item.collection}/${slug}`}
+          date={data.date}
+          dateRange={
+            data.startDate && data.endDate
+              ? { start: data.startDate, end: data.endDate }
+              : undefined
+          }
+          images={data.photos}
+          image={data.image}
+          imagePosition={imagePosition}
+          showArrow={showArrow}
+        />
+      );
+    })
+  }
+</div>

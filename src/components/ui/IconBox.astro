@@ -1,0 +1,31 @@
+---
+// src/components/IconBox.astro
+interface Props {
+  icon: string;
+  size?: 'xs' | 'sm' | 'md' | 'lg' | 'xl';
+  class?: string;
+}
+
+const { icon, size = 'lg', class: extraClass = '' } = Astro.props;
+
+const sizeMap: Record<string, string> = {
+  xs: 'w-12 h-12',
+  sm: 'w-14 h-14',
+  md: 'w-16 h-16',
+  lg: 'w-20 h-20',
+  xl: 'w-24 h-24',
+};
+const textSizeMap: Record<string, string> = {
+  xs: 'text-2xl',
+  sm: 'text-3xl',
+  md: 'text-3xl',
+  lg: 'text-4xl',
+  xl: 'text-5xl',
+};
+---
+
+<div
+  class={`flex items-center justify-center border-3 rounded-xl bg-white shadow-brutalSm ${sizeMap[size]} ${extraClass}`}
+>
+  <span class={`${textSizeMap[size]}`}>{icon}</span>
+</div>

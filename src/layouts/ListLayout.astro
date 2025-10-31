@@ -1,0 +1,49 @@
+---
+// Reusable list layout wrapped with the base Layout.
+// Use this component directly in pages to render a list page.
+// Props:
+// - pageTitle?: string (document title passed to Layout). If not provided, `title` is used.
+// - title: string (section title)
+// - intro?: string
+// - actions?: any
+// - maxWidth?: string (Tailwind max-width class, default 'max-w-3xl')
+// - isEmpty?: boolean (if true, shows standardized empty state instead of slot content)
+import Layout from './Layout.astro';
+
+const {
+  pageTitle = null,
+  title = '',
+  intro = '',
+  actions = null,
+  maxWidth = 'max-w-3xl',
+  isEmpty = false,
+} = Astro.props;
+
+const containerClass = `${maxWidth} mx-auto`;
+---
+
+<Layout title={pageTitle ?? title}>
+  <section class="section">
+    <div class={containerClass}>
+      <div class="text-center mb-15">
+        <h1 class="mb-4">{title}</h1>
+        {intro && <p class="text-lg text-gray-600 md:text-xl">{intro}</p>}
+      </div>
+
+      {actions && <div class="flex justify-center mb-6">{actions}</div>}
+
+      {
+        isEmpty ? (
+          <div class="p-10 text-center card">
+            <h3 class="mb-2 text-xl font-bold">Keine Inhalte verfügbar</h3>
+            <p>Schauen Sie bald wieder vorbei!</p>
+          </div>
+        ) : (
+          <div class="flex flex-col max-w-2xl gap-6 mx-auto">
+            <slot />
+          </div>
+        )
+      }
+    </div>
+  </section>
+</Layout>

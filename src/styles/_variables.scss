@@ -1,0 +1,89 @@
+// Custom SCSS variables for the project
+$custom-spacing-unit: 1.5rem; // For padding/margins
+$custom-breakpoint-sm: 576px;
+$custom-breakpoint-md: 768px;
+$custom-breakpoint-lg: 1024px;
+
+// ===== CENTRALIZED COLOR SYSTEM =====
+// All colors should be defined here and referenced via CSS variables or SCSS variables
+// This ensures consistency across the entire website
+
+// Primary neutrals
+$color-white: #ffffff;
+$color-black: #000000;
+$color-off-white: #f8f8f8;
+$color-light-gray: #f9f9f9;
+$color-gray-50: #f5f5f5;
+$color-gray-100: #f0f0f0;
+$color-gray-200: #e8e8e8;
+$color-gray-300: #e5e5e5;
+$color-gray-400: #e0e0e0;
+$color-gray-600: #6b6b6b;
+$color-gray-700: #555555;
+$color-gray-800: #333333;
+$color-gray-900: #111111;
+
+// Text colors
+$color-text-primary: #000000;
+$color-text-secondary: #333333;
+$color-text-muted: #6b6b6b;
+$color-text-muted-strong: #111111;
+$color-text-light: #999999;
+
+// Brutalist project colors — primary accent palette
+$brutal-pink: #f396e5;
+$brutal-blue: #96c7f2;
+$brutal-yellow: #f2cf96;
+$brutal-green: #adf296;
+
+// Status/Action colors
+$color-red: #f29696;
+$color-green: $brutal-green;
+$color-blue: $brutal-blue;
+$color-yellow: $brutal-yellow;
+$color-pink: $brutal-pink;
+
+// Background colors for status
+$color-bg-success: #f0fde0;
+$color-bg-error: #fde0e0;
+$color-bg-info: #e8f4fd;
+$color-bg-warning: rgba(242, 207, 150, 0.9);
+
+// Borders
+$border-color: #000000;
+$border-color-light: #444444;
+$border-color-lighter: rgba(0, 0, 0, 0.35);
+$border-color-ghost: rgba(0, 0, 0, 0.28);
+$border-color-divider: #e5e5e5;
+$border-color-subtle: rgba(0, 0, 0, 0.02);
+
+// Shadows (brutalist style with black offsets)
+$shadow-sm: 4px 4px 0 #000;
+$shadow-lg: 10px 10px 0 #000;
+$shadow-sm-2px: 2px 2px 0 #000;
+$shadow-sm-3px: 3px 3px 0 #000;
+$shadow-sm-6px: 6px 6px 0 #000;
+$shadow-sm-1px: 1px 1px 0 #000;
+
+// Semantic shadows
+$shadow-focus: 3px 3px 0 #000;
+$shadow-focus-2px: 2px 2px 0 #000;
+$shadow-focus-outline: 3px solid #000;
+
+// Drop shadows (for more subtle depth)
+$custom-shadow-light: 0 1px 3px rgba(0, 0, 0, 0.1);
+$custom-shadow-medium: 0 4px 6px rgba(0, 0, 0, 0.1);
+$custom-shadow-large: 0 8px 32px rgba(85, 107, 47, 0.12);
+
+// Border radius
+$border-radius: 1rem;
+$border-radius-md: 10px;
+$border-radius-lg: 18px;
+$border-radius-xl: 14px;
+
+// RGBA utilities
+$rgba-dark-55: rgba(0, 0, 0, 0.55);
+$rgba-dark-09: rgba(0, 0, 0, 0.09);
+$rgba-dark-06: rgba(0, 0, 0, 0.06);
+$rgba-blue-highlight: rgba(108, 167, 217, 0.9);
+$rgba-pink-95: rgba(243, 150, 229, 0.95);

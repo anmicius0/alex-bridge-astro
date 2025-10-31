@@ -1,0 +1,141 @@
+# public/admin/config.yml
+local_backend: true
+
+backend:
+  name: git-gateway
+  repo: anmicius0/alex-bridge-astro
+  branch: main
+  auth_type: pkce
+  base_url: https://auth.decapbridge.com
+  auth_endpoint: /sites/64127340-36fc-4e30-8c97-dc87c3a8350b/pkce
+  auth_token_endpoint: /sites/64127340-36fc-4e30-8c97-dc87c3a8350b/token
+  gateway_url: https://gateway.decapbridge.com
+
+logo_url: https://decapbridge.com/decapcms-with-bridge.svg
+site_url: https://alexbridge.vercel.app/
+
+media_folder: 'public/files'
+media_library:
+  name: cloudinary
+  config:
+    cloud_name: djaasqsts
+    api_key: 123357211727668
+public_folder: '/files'
+
+collections:
+  - name: 'news'
+    label: 'News'
+    folder: 'src/content/news'
+    create: true
+    fields:
+      - label: 'Title'
+        name: 'title'
+        widget: 'string'
+        pattern: ['^.{1,60}$', 'Max 60 characters']
+      - label: 'Photos'
+        name: 'photos'
+        widget: 'list'
+        summary: '{{fields.image}}'
+        field:
+          label: 'Image'
+          name: 'image'
+          widget: 'image'
+      - label: 'Date'
+        name: 'date'
+        widget: 'datetime'
+        default: '{{now}}'
+        date_format: 'YYYY-MM-DD'
+        time_format: false
+        format: 'YYYY-MM-DD'
+        picker_utc: true
+      - label: 'Body'
+        name: 'body'
+        widget: 'markdown'
+
+  - name: 'file'
+    label: 'File'
+    folder: 'src/content/file'
+    create: true
+    fields:
+      - label: 'Title'
+        name: 'title'
+        widget: 'string'
+        pattern: ['^.{1,60}$', 'Max 60 characters']
+      - label: 'Date'
+        name: 'date'
+        widget: 'datetime'
+        default: '{{now}}'
+        date_format: 'YYYY-MM-DD'
+        time_format: false
+        format: 'YYYY-MM-DD'
+        picker_utc: true
+
+      - label: 'Attachments'
+        name: 'attachments'
+        widget: 'list'
+        summary: '{{fields.file}}'
+        field:
+          label: 'File'
+          name: 'file'
+          widget: 'file'
+
+  - name: 'holiday'
+    label: 'Holiday'
+    folder: 'src/content/holiday'
+    create: true
+    fields:
+      - label: 'Title'
+        name: 'title'
+        widget: 'string'
+        pattern: ['^.{1,60}$', 'Max 60 characters']
+      - label: 'Image'
+        name: 'image'
+        widget: 'image'
+      - label: 'Start Date'
+        name: 'startDate'
+        widget: 'datetime'
+        date_format: 'YYYY-MM-DD'
+        time_format: false
+        format: 'YYYY-MM-DD'
+        picker_utc: true
+      - label: 'End Date'
+        name: 'endDate'
+        widget: 'datetime'
+        date_format: 'YYYY-MM-DD'
+        time_format: false
+        format: 'YYYY-MM-DD'
+        picker_utc: true
+      - label: 'Body'
+        name: 'body'
+        widget: 'markdown'
+
+  - name: 'quiz'
+    label: 'Quiz'
+    folder: 'src/content/quiz'
+    create: true
+    fields:
+      - label: 'Title'
+        name: 'title'
+        widget: 'string'
+        pattern: ['^.{1,60}$', 'Max 60 characters']
+      - label: 'Date'
+        name: 'date'
+        widget: 'datetime'
+        default: '{{now}}'
+        date_format: 'YYYY-MM-DD'
+        time_format: false
+        format: 'YYYY-MM-DD'
+        picker_utc: true
+
+      - label: 'Body'
+        name: 'body'
+        widget: 'markdown'
+      - name: 'choices'
+        widget: 'list'
+        fields:
+          - name: 'choiceText'
+            widget: 'text'
+          - name: 'isCorrect'
+            widget: 'boolean'
+      - name: 'explanation'
+        widget: 'text'

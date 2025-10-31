@@ -1,0 +1,105 @@
+---
+import { Image } from 'astro:assets';
+import type { CollectionEntry } from 'astro:content';
+import Button from '../components/ui/Button.astro';
+import DateDisplay from '../components/ui/DateDisplay.astro';
+import ImageCarousel from '../components/ui/ImageCarousel.astro';
+import Layout from './Layout.astro';
+
+interface Props {
+  entry:
+    | CollectionEntry<'news'>
+    | CollectionEntry<'holiday'>
+    | CollectionEntry<'quiz'>
+    | CollectionEntry<'file'>;
+}
+
+const { entry } = Astro.props;
+const { collection, data } = entry;
+
+// Type guards for different collection types
+const isNews = collection === 'news';
+const isHoliday = collection === 'holiday';
+const isQuiz = collection === 'quiz';
+const isFile = collection === 'file';
+
+// Dynamically generate the back link and its text
+const collectionNameMap = {
+  news: 'News',
+  holiday: 'Reisen',
+  quiz: 'Quiz',
+  file: 'Unterlagen',
+};
+
+const backLink = `/${collection}`;
+const backText = `← Zurück zu ${collectionNameMap[collection as keyof typeof collectionNameMap] || 'Übersicht'}`;
+---
+
+<Layout title={`${data.title} - Bridge mit Alexander`}>
+  <section class="section">
+    <article class="max-w-3xl mx-auto">
+      <!-- Back Link (Always present) -->
+      <div class="mb-5">
+        <Button text={backText} href={backLink} target="_self" />
+      </div>
+
+      <!-- Media Section (Conditional) -->
+      <!-- It smartly chooses between a carousel for `photos` or a single `image` -->
+      {
+        (isNews || isQuiz) &&
+        'photos' in data &&
+        data.photos &&
+        data.photos.length > 0 ? (
+          <div class="mb-6">
+            <ImageCarousel images={data.photos} title={data.title} />
+          </div>
+        ) : (isNews || isHoliday || isQuiz) && 'image' in data && data.image ? (
+          <div class="mb-6 media-frame">
+            <Image
+              src={data.image}
+              alt={data.title}
+              class="object-cover w-full h-96"
+              width={1600}
+              height={768}
+            />
+          </div>
+        ) : null
+      }
+
+      <!-- Header Section (Always present) -->
+      <h1 class="mb-2">{data.title}</h1>
+
+      <!-- Metadata Section (Conditional) -->
+      <!-- It smartly chooses between a single `date` or a `dateRange` -->
+      {
+        (isNews || isQuiz || isFile) && 'date' in data && data.date && (
+          <p class="mb-6 text-sm text-muted-weak">
+            <DateDisplay date={data.date} />
+          </p>
+        )
+      }
+      {
+        isHoliday &&
+          'startDate' in data &&
+          'endDate' in data &&
+          data.startDate &&
+          data.endDate && (
+            <p class="mb-6 text-sm text-muted-weak">
+              <DateDisplay date={data.startDate} /> —{' '}
+              <DateDisplay date={data.endDate} />
+            </p>
+          )
+      }
+
+      <!-- Main Content Area (Slot for Markdown) -->
+      <div class="prose prose-lg prose-brutal max-w-none">
+        <slot />
+      </div>
+
+      <!-- Special Content Area (Named slot for anything extra, like Quiz UI) -->
+      <div class="mt-8">
+        <slot name="after-content" />
+      </div>
+    </article>
+  </section>
+</Layout>

@@ -1,0 +1,367 @@
+---
+import { ClientRouter } from 'astro:transitions';
+import Footer from '../components/layout/Footer.astro';
+import Header from '../components/layout/Header.astro';
+import ListLayout from './ListLayout.astro';
+import '../styles/global.css';
+import '../styles/tailwind.css';
+
+// Props:
+// - title: string
+// - listTitle?: string  -> when provided, the main slot will be wrapped with ListLayout
+// - listIntro?: string
+// - listActions?: any
+// - listMaxWidth?: string
+const {
+  title,
+  listTitle = null,
+  listIntro = null,
+  listActions = null,
+  listMaxWidth = 'max-w-3xl',
+} = Astro.props;
+---
+
+<!doctype html>
+<html lang="de">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="sitemap" href="/sitemap-index.xml" />
+    <ClientRouter />
+    <title>{title}</title>
+  </head>
+  <body class="m-0 bg-white font-display">
+    <!-- Page transition overlay -->
+    <div
+      id="page-transition"
+      class="page-transition transition-persist transition-overlay"
+    >
+    </div>
+
+    <Header />
+    <main class="container-b">
+      {
+        listTitle ? (
+          <ListLayout
+            title={listTitle}
+            intro={listIntro}
+            actions={listActions}
+            maxWidth={listMaxWidth}
+          >
+            <slot />
+          </ListLayout>
+        ) : (
+          <slot />
+        )
+      }
+    </main>
+    <Footer />
+
+    <script is:inline>
+      // Page Transition Script: Handles smooth transitions with overlay effect.
+      // Optimized for 60fps by avoiding forced reflows and using rAF-based commits.
+      // Flow: Cover old page, swap content, reveal new page.
+
+      // Timing constants (ms) - reduced for snappier feel and less frame drops
+      const TRANSITION_MS = 500; // Reduced from 600ms for faster transitions
+      const MAX_TRANSITION_TIME = 1200; // Reduced from 1500ms for faster timeout
+
+      // State
+      let isTransitioning = false;
+      let transitionTimeout = null;
+
+      // DOM Helpers
+
+      function getOverlay() {
+        return document.getElementById('page-transition');
+      }
+
+      function resetOverlay() {
+        const overlay = getOverlay();
+        if (!overlay) return;
+        // Remove animation classes
+        overlay.classList.remove('sweep-in', 'sweep-out');
+        // Remove custom properties
+        overlay.style.removeProperty('--enter-ms');
+        overlay.style.removeProperty('--exit-ms');
+        // Reset transform without forced reflow
+        overlay.style.transform = 'translateX(-100%) skewX(-5deg)';
+        // Remove will-change to save memory when not animating
+        overlay.style.willChange = 'auto';
+      }
+
+      function clearTransitionTimeout() {
+        if (transitionTimeout) {
+          clearTimeout(transitionTimeout);
+          transitionTimeout = null;
+        }
+      }
+
+      function resetTransitionState() {
+        clearTransitionTimeout();
+        isTransitioning = false;
+        resetOverlay();
+      }
+
+      function setSafetyTimeout() {
+        clearTransitionTimeout();
+        transitionTimeout = setTimeout(() => {
+          console.warn('Transition timeout - forcing reset');
+          resetTransitionState();
+        }, MAX_TRANSITION_TIME);
+      }
+
+      // Animation Functions - Optimized to avoid forced reflows
+
+      function playTransitionEnter(enterMs = TRANSITION_MS) {
+        const overlay = getOverlay();
+        if (!overlay) return Promise.resolve();
+
+        return new Promise((resolve) => {
+          // Step 1: Set initial state and styles (all writes, no reads)
+          overlay.classList.remove('sweep-in', 'sweep-out');
+          overlay.style.transform = 'translateX(-100%) skewX(-5deg)';
+          overlay.style.setProperty('--enter-ms', enterMs + 'ms');
+          overlay.style.willChange = 'transform'; // Enable GPU acceleration
+
+          // Step 2: Use rAF to batch the class addition on next frame
+          // This avoids forced reflow - browser computes layout once per frame
+          requestAnimationFrame(() => {
+            overlay.classList.add('sweep-in');
+
+            // Race between animationend and safety timeout
+            const timeoutId = setTimeout(() => {
+              overlay.removeEventListener('animationend', onEnd);
+              resolve();
+            }, enterMs + 100);
+
+            const onEnd = () => {
+              clearTimeout(timeoutId);
+              overlay.removeEventListener('animationend', onEnd);
+              resolve();
+            };
+
+            overlay.addEventListener('animationend', onEnd, { once: true });
+          });
+        });
+      }
+
+      function playTransitionExit(exitMs = TRANSITION_MS) {
+        const overlay = getOverlay();
+        if (!overlay) return Promise.resolve();
+
+        return new Promise((resolve) => {
+          // Step 1: Set initial state (all writes)
+          overlay.classList.remove('sweep-in');
+          overlay.style.transform = 'translateX(0) skewX(-5deg)';
+          overlay.style.setProperty('--exit-ms', exitMs + 'ms');
+          overlay.style.willChange = 'transform';
+
+          // Step 2: Use rAF to add sweep-out class on next frame
+          requestAnimationFrame(() => {
+            overlay.classList.add('sweep-out');
+
+            // Single timeout for cleanup after animation
+            setTimeout(() => {
+              resetOverlay();
+              resolve();
+            }, exitMs + 50);
+          });
+        });
+      }
+
+      // Astro Integration
+
+      document.addEventListener('astro:before-preparation', (e) => {
+        if (isTransitioning) {
+          console.warn('Transition already in progress');
+          return;
+        }
+        e.preventDefault();
+        isTransitioning = true;
+        setSafetyTimeout();
+
+        // Start enter animation, then dispatch continue event only after rAF
+        // This ensures DOM is ready before concurrent updates
+        playTransitionEnter(TRANSITION_MS).then(() => {
+          requestAnimationFrame(() => {
+            window.dispatchEvent(new Event('astro:continue-preparation'));
+          });
+        });
+      });
+
+      document.addEventListener('astro:after-swap', () => {
+        if (!isTransitioning) return;
+        playTransitionExit(TRANSITION_MS).then(() => {
+          resetTransitionState();
+        });
+      });
+
+      document.addEventListener('astro:page-load', () => {
+        if (isTransitioning) {
+          playTransitionExit(TRANSITION_MS).then(() => {
+            resetTransitionState();
+          });
+        }
+      });
+
+      // Browser Navigation Handling
+
+      window.addEventListener('popstate', () => {
+        if (isTransitioning) {
+          console.log('Browser navigation during transition - resetting');
+          resetTransitionState();
+        }
+      });
+
+      window.addEventListener('pageshow', (event) => {
+        if (event.persisted) {
+          console.log('Page restored from cache - resetting');
+          resetTransitionState();
+        }
+      });
+
+      document.addEventListener('visibilitychange', () => {
+        if (document.visibilityState === 'visible' && isTransitioning) {
+          console.log('Page visible with active transition - resetting');
+          resetTransitionState();
+        }
+      });
+
+      // Initial Load Animation - optimized with rAF
+
+      if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', () => {
+          const overlay = getOverlay();
+          if (!overlay) return;
+          // Set initial position, then animate on next frame
+          overlay.style.transform = 'translateX(0) skewX(-5deg)';
+          requestAnimationFrame(() => {
+            playTransitionExit(TRANSITION_MS);
+          });
+        });
+      } else {
+        const overlay = getOverlay();
+        if (overlay) {
+          overlay.style.transform = 'translateX(0) skewX(-5deg)';
+          requestAnimationFrame(() => {
+            playTransitionExit(TRANSITION_MS);
+          });
+        }
+      }
+    </script>
+
+    <!-- Smooth Scroll Script -->
+    <script>
+      import {
+        cleanupSmoothScroll,
+        initSmoothScroll,
+      } from '../lib/ui/smooth-scroll';
+
+      // Init on load
+      initSmoothScroll();
+
+      // Re-init after transitions
+      document.addEventListener('astro:after-swap', () => {
+        initSmoothScroll();
+      });
+
+      // Cleanup before transitions
+      document.addEventListener('astro:before-preparation', () => {
+        cleanupSmoothScroll();
+      });
+    </script>
+
+    <style>
+      /* Page Transition Overlay Styles - GPU optimized */
+
+      .page-transition {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 140vw; /* Extra width to cover skew */
+        height: 100vh;
+        background: white;
+        z-index: 9999;
+        transform: translateX(-100%) skewX(-5deg);
+        transform-origin: top left;
+        pointer-events: none;
+        /* will-change added dynamically during animation only */
+      }
+
+      /* Border on pseudo-element to avoid animating it */
+      .page-transition::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        border-left: 3px solid var(--border);
+        border-right: 3px solid var(--border);
+        pointer-events: none;
+      }
+
+      /* Animation classes - only transform is animated for GPU acceleration */
+      .page-transition.sweep-in {
+        animation: sweepIn var(--enter-ms, 500ms) cubic-bezier(0.65, 0, 0.35, 1)
+          forwards;
+      }
+
+      .page-transition.sweep-out {
+        animation: sweepOut var(--exit-ms, 500ms) cubic-bezier(0.65, 0, 0.35, 1)
+          forwards;
+      }
+
+      /* Keyframes - only transform property for best performance */
+      @keyframes sweepIn {
+        from {
+          transform: translateX(-100%) skewX(-5deg);
+        }
+        to {
+          transform: translateX(0) skewX(-5deg);
+        }
+      }
+
+      @keyframes sweepOut {
+        from {
+          transform: translateX(0) skewX(-5deg);
+        }
+        to {
+          transform: translateX(100%) skewX(-5deg);
+        }
+      }
+
+      /* Disable animations for users who prefer reduced motion */
+      @media (prefers-reduced-motion: reduce) {
+        .page-transition {
+          animation: none !important;
+          transition: none !important;
+        }
+
+        .page-transition.sweep-in {
+          transform: translateX(0) skewX(-5deg);
+        }
+
+        .page-transition.sweep-out {
+          transform: translateX(100%) skewX(-5deg);
+        }
+      }
+
+      /* Disable default View Transitions */
+      html:has(:root) {
+        view-transition-name: none;
+      }
+
+      html::view-transition-old(root),
+      html::view-transition-new(root) {
+        animation-duration: 0ms !important;
+      }
+
+      /* Disable native smooth scroll */
+      html {
+        scroll-behavior: auto;
+      }
+    </style>
+  </body>
+</html>

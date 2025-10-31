@@ -1,0 +1,64 @@
+---
+interface Props {
+  class?: string;
+}
+
+import { Image } from 'astro:assets';
+import grandmaImage from '../../assets/grandma_playing_bridge_online.webp';
+import Button from '../ui/Button.astro';
+
+const { class: extraClass = '' } = Astro.props;
+---
+
+<section
+  class={`py-16 md:py-20 flex flex-col md:flex-row gap-10 md:gap-16 px-4 md:px-5 ${extraClass}`}
+>
+  <div class="flex flex-col gap-5 md:w-1/2">
+    <p class="text-gray-700">Meistern Sie das Bridgespiel</p>
+    <h1 class="text-4xl font-black leading-tight md:text-5xl">
+      Bridge spielen mit Leidenschaft.
+    </h1>
+    <p class="text-lg text-gray-700 md:text-xl">
+      Werden Sie Teil einer erstklassigen Bridge-Community in Lübeck. Von
+      Anfängerkursen bis zu fortgeschrittenen Strategien, finden Sie Ihren Platz
+      am Tisch mit Eleganz und Fachwissen.
+    </p>
+    <Button text="Mehr erfahren" href="#why" />
+  </div>
+
+  <div class="flex items-center justify-center p-6 md:w-1/2 md:p-10">
+    <div class="relative group">
+      <div
+        class="absolute -top-6 -left-10 text-4xl px-4 py-1 z-10 rounded-t-2xl border-[3px] border-black shadow-[4px_4px_0_#000] group-hover:shadow-[10px_10px_0_#000] transition"
+        style="background-color: #f396e5;"
+      >
+        ♣
+      </div>
+      <div
+        class="absolute top-10 -right-10 text-4xl p-2 z-10 rounded-full border-[3px] border-black shadow-[4px_4px_0_#000] group-hover:shadow-[10px_10px_0_#000] transition"
+        style="background-color: #f2cf96;"
+      >
+        ♥
+      </div>
+      <div
+        class="border-[3px] border-black rounded-2xl w-72 h-72 md:w-80 md:h-80 shadow-[4px_4px_0_#000] group-hover:shadow-[10px_10px_0_#000] transition relative overflow-hidden"
+        style="background-color: #96c7f2;"
+      >
+        <Image
+          src={grandmaImage}
+          alt="Grandma playing bridge online"
+          class="object-cover w-full h-full"
+          width={640}
+          height={640}
+          loading="eager"
+        />
+      </div>
+      <div
+        class="absolute -bottom-6 right-0 border-[3px] border-black rounded-full px-3 py-1 shadow-[2px_2px_0_#000]"
+        style="background-color: #adf296;"
+      >
+        <span class="text-sm">Bridge mit Alexander</span>
+      </div>
+    </div>
+  </div>
+</section>

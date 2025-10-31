@@ -1,0 +1,35 @@
+---
+import Button from '../ui/Button.astro';
+
+// If you already have email/WhatsApp links, keep their same hrefs below.
+const year = new Date().getFullYear();
+// Replace the placeholders only if you previously used different hrefs.
+const emailHref = 'mailto:alexis-bridge@gmx.de';
+const whatsappHref = 'https://wa.me/+491794880345';
+
+const { class: extraClass = '' } = Astro.props;
+---
+
+<footer class={`px-5 py-10 md:px-0 ${extraClass}`}>
+  <div
+    class="container mx-auto flex flex-col items-center justify-center gap-6 md:grid md:grid-cols-3"
+  >
+    <div class="flex items-center gap-3 font-medium text-gray-700">
+      <div
+        class="rounded-md border-2 border-black bg-brutalPink px-2 py-0.5 shadow-none"
+      >
+        B
+      </div>
+      <span class="text-sm">Bridge mit Alexander</span>
+    </div>
+
+    <p class="text-center text-sm md:text-base">
+      © {year} Bridge Club. Alle Rechte vorbehalten.
+    </p>
+
+    <div class="flex items-center justify-center md:justify-end gap-5">
+      <Button text="E-Mail" href={emailHref} />
+      <Button text="WhatsApp" href={whatsappHref} />
+    </div>
+  </div>
+</footer>

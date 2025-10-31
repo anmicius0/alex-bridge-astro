@@ -1,0 +1,109 @@
+---
+import { Image } from 'astro:assets';
+import DateDisplay from '../ui/DateDisplay.astro';
+
+interface Props {
+  title: string;
+  href?: string;
+  date?: Date | string;
+  dateRange?: { start: Date | string; end: Date | string };
+  description?: string;
+  image?: string;
+  images?: string[];
+  imagePosition?: 'top' | 'left';
+  showArrow?: boolean;
+  class?: string;
+}
+
+const {
+  title,
+  href,
+  date,
+  dateRange,
+  description,
+  image,
+  images = [],
+  imagePosition = 'top',
+  showArrow = false,
+  class: extraClass,
+} = Astro.props;
+
+// Determine available content
+const displayImage = images?.length > 0 ? images[0] : image;
+const hasImage = !!displayImage;
+const hasDescription = !!description;
+const hasDateRange = !!dateRange;
+
+// Auto-select layout based on content and imagePosition preference
+const isHorizontal =
+  hasImage && imagePosition === 'left' && !hasDescription && !hasDateRange;
+
+// Build layout classes dynamically
+const containerClasses = [
+  'card p-6 group',
+  isHorizontal ? 'flex items-center gap-4' : 'block',
+].join(' ');
+const contentClasses = isHorizontal ? 'flex-1 min-w-0' : '';
+
+const Tag = href ? 'a' : 'div';
+---
+
+<Tag href={href} class={`${containerClasses} ${extraClass}`}>
+  {
+    displayImage && (
+      <div
+        class={
+          isHorizontal
+            ? 'flex-shrink-0 overflow-hidden rounded-lg border-2 border-black w-32 h-32 md:w-40 md:h-40'
+            : 'w-full mb-4 overflow-hidden rounded-lg'
+        }
+      >
+        <Image
+          src={displayImage}
+          alt={title}
+          class={
+            isHorizontal
+              ? 'object-cover w-full h-full'
+              : 'object-cover w-full h-48'
+          }
+          width={isHorizontal ? 320 : 800}
+          height={isHorizontal ? 320 : 384}
+        />
+      </div>
+    )
+  }
+
+  <div class={contentClasses}>
+    <h3
+      class={`mb-2 text-xl font-bold break-words ${isHorizontal ? 'group-hover:text-brutalBlue transition-colors' : ''}`}
+    >
+      {title}
+    </h3>
+
+    {
+      date && (
+        <p class="text-sm text-muted-weak">
+          <DateDisplay date={date} />
+        </p>
+      )
+    }
+
+    {
+      dateRange && (
+        <p class="mb-2 text-sm text-muted-weak">
+          <DateDisplay date={dateRange.start} /> -{' '}
+          <DateDisplay date={dateRange.end} />
+        </p>
+      )
+    }
+
+    {description && <p class="text-muted">{description}</p>}
+    <slot />
+  </div>
+
+  {
+    showArrow && (
+      <i class="text-2xl transition-transform ri-arrow-right-line group-hover:translate-x-1" />
+    )
+  }
+</Tag>

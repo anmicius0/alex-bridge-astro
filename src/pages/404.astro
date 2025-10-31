@@ -1,0 +1,31 @@
+---
+import Button from '../components/ui/Button.astro';
+import ErrorLayout from '../layouts/ErrorLayout.astro';
+---
+
+<ErrorLayout
+  title="404 - Seite nicht gefunden"
+  errorCode="404"
+  errorColor="yellow"
+  heading="Seite nicht gefunden"
+  message="Entschuldigung, die gesuchte Seite existiert nicht. Möglicherweise wurde sie verschoben oder gelöscht."
+>
+  <p class="mb-6 text-sm font-semibold">Wohin sollen wir dich bringen?</p>
+  <div class="flex flex-col justify-center gap-4 sm:flex-row">
+    <Button text="Zur Startseite" href="/" variant="primary" size="md" />
+    <Button
+      text="Zu den Kursen"
+      href="/calendar/online"
+      variant="primary"
+      size="md"
+    />
+    <Button text="Zu den Reisen" href="/holiday" variant="primary" size="md" />
+  </div>
+
+  <span slot="footer">
+    Wenn du denkst, dass dies ein Fehler ist, kontaktiere uns bitte über die <a
+      href="/"
+      class="font-semibold underline transition hover:text-black">Startseite</a
+    >.
+  </span>
+</ErrorLayout>

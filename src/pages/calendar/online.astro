@@ -1,0 +1,74 @@
+---
+// Server-only frontmatter
+import ical from 'node-ical';
+import type { CalendarEvent } from '../../components/Calendar';
+import Calendar from '../../components/Calendar';
+import SectionHeader from '../../components/ui/SectionHeader.astro';
+import Layout from '../../layouts/Layout.astro';
+import { logError, safeExecute } from '../../lib/api/error-handler';
+
+const ICS_URL =
+  'https://calendar.google.com/calendar/ical/b7ba0af741653fd2b3b03a3d9f12b50c9ca0068deae2b8fa197ed24153dd1b9a40%40group.calendar.google.com/public/basic.ics';
+
+// Small utility: enforce a hard timeout on network/parse
+function withTimeout<T>(p: Promise<T>, ms = 5000) {
+  return Promise.race([
+    p,
+    new Promise<T>((_, reject) =>
+      setTimeout(() => reject(new Error('ICS fetch timed out')), ms)
+    ),
+  ]);
+}
+async function fetchEvents(): Promise<CalendarEvent[]> {
+  const data = await withTimeout(ical.async.fromURL(ICS_URL), 5000);
+  const events = Object.values(data)
+    .filter((e) => (e as any)?.type === 'VEVENT')
+    .map((e) => {
+      const ev = e as any;
+      return {
+        id: String(ev.uid ?? ''),
+        title: String(ev.summary ?? ''),
+        start: ev.start?.toISOString?.(),
+        end: ev.end?.toISOString?.(),
+        allDay: false,
+        extendedProps: { description: ev.description, location: ev.location },
+      } as CalendarEvent;
+    })
+    .filter((e) => e.start && e.title);
+  return events;
+}
+
+// Fetch with error safety (no caching)
+const result = await safeExecute(fetchEvents, {
+  logLevel: 'error',
+  context: 'calendar:ics',
+});
+const events: CalendarEvent[] = Array.isArray(result)
+  ? (result as CalendarEvent[])
+  : [];
+
+// Cache on Vercel Edge for 10 mins, serve stale content while revalidating
+Astro.response.headers.set(
+  'Cache-Control',
+  'public, s-maxage=600, stale-while-revalidate=86400'
+);
+
+if (events.length === 0) {
+  logError('ICS returned no events', {
+    logLevel: 'warn',
+    context: 'calendar:ics',
+  });
+}
+---
+
+<Layout title="Bridge-Kursplan">
+  <section class="section">
+    <SectionHeader
+      title="Bridge-Kursplan"
+      description="Durchsuchen Sie den Zeitplan für bevorstehende Bridge-Kurse. Alle Sitzungen finden live statt und sind interaktiv."
+    />
+    <div class="max-w-4xl mx-auto mt-8">
+      <Calendar events={events} client:load />
+    </div>
+  </section>
+</Layout>

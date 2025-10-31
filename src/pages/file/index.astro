@@ -1,0 +1,40 @@
+---
+import type { CollectionEntry } from 'astro:content';
+import { getCollection } from 'astro:content';
+import Card from '../../components/content/Card.astro';
+import Button from '../../components/ui/Button.astro';
+import ListLayout from '../../layouts/ListLayout.astro';
+
+const fileDocuments: CollectionEntry<'file'>[] = await getCollection('file');
+---
+
+<ListLayout
+  pageTitle="Dateien - Bridge mit Alexander"
+  title="Dateien"
+  intro="Herunterladen von Bridge-Materialien und Dokumenten"
+  maxWidth="max-w-4xl"
+  isEmpty={fileDocuments.length === 0}
+>
+  {
+    fileDocuments.map((doc) => (
+      <Card title={doc.data.title} class="md:p-8">
+        {doc.data.attachments && doc.data.attachments.length > 0 && (
+          <div class="flex flex-wrap gap-3">
+            {doc.data.attachments.map((file: string) => {
+              const fileName = file.split('/').pop() || file;
+              return (
+                <Button
+                  text={fileName}
+                  download={true}
+                  href={file}
+                  target="_blank"
+                  icon="📄"
+                />
+              );
+            })}
+          </div>
+        )}
+      </Card>
+    ))
+  }
+</ListLayout>

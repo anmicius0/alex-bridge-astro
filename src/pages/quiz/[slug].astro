@@ -1,0 +1,34 @@
+---
+import type { CollectionEntry } from 'astro:content';
+import { getCollection, render } from 'astro:content';
+import QuizQuestion from '../../components/QuizQuestion';
+import ContentLayout from '../../layouts/ContentLayout.astro';
+import { getEntrySlug } from '../../services/content-slug';
+export const prerender = true;
+
+export async function getStaticPaths() {
+  const quizzes = await getCollection('quiz');
+  return quizzes.map((quiz) => ({
+    params: { slug: getEntrySlug(quiz) },
+    props: { quiz },
+  }));
+}
+
+type Props = { quiz: CollectionEntry<'quiz'> };
+const { quiz } = Astro.props;
+const { Content } = await render(quiz);
+---
+
+<ContentLayout entry={quiz}>
+  <!-- Main markdown content goes into the default slot -->
+  <Content />
+
+  <!-- The interactive component goes into the 'after-content' slot -->
+  <div slot="after-content">
+    <QuizQuestion
+      client:load
+      choices={quiz.data.choices}
+      explanation={quiz.data.explanation}
+    />
+  </div>
+</ContentLayout>

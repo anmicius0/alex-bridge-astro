@@ -1,0 +1,53 @@
+---
+/**
+ * FeaturesGrid Component
+ * Displays feature highlights in a responsive grid
+ */
+
+interface Props {
+  features: Array<{
+    icon: string;
+    title: string;
+    description: string;
+  }>;
+  class?: string;
+}
+
+const { features, class: extraClass = '' } = Astro.props;
+import IconBox from '../ui/IconBox.astro';
+---
+
+<div class={`grid gap-12 md:grid-cols-3 md:gap-16 ${extraClass}`}>
+  {
+    features.map((feature) => (
+      <div class="feature-box px-4">
+        <IconBox icon={feature.icon} />
+        <h3 class="feature-box-title">{feature.title}</h3>
+        <p class="feature-box-description max-w-sm">{feature.description}</p>
+      </div>
+    ))
+  }
+</div>
+
+<style>
+  .feature-box {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    gap: 1rem;
+  }
+
+  .feature-box-title {
+    font-size: 1.25rem;
+    font-weight: 700;
+    line-height: 1.2;
+    margin: 0;
+  }
+
+  .feature-box-description {
+    color: var(--text-secondary, #333);
+    line-height: 1.6;
+    margin: 0;
+  }
+</style>

@@ -1,0 +1,434 @@
+---
+/**
+ * ImageCarousel Component
+ * A brutalist-styled image carousel with keyboard and arrow navigation
+ */
+
+interface Props {
+  images: string[];
+  title?: string;
+  class?: string;
+}
+
+const { images, title = 'Gallery', class: extraClass = '' } = Astro.props;
+const validImages = images.filter((img) => img?.trim());
+---
+
+{
+  validImages.length > 0 && (
+    <div class={`image-carousel ${extraClass}`}>
+      <div class="carousel-container">
+        <div class="carousel-main media-frame">
+          <div class="carousel-track">
+            {validImages.map((img, index) => (
+              <img
+                src={img}
+                alt={`${title} - Image ${index + 1}`}
+                class="carousel-image"
+                data-index={index}
+              />
+            ))}
+          </div>
+        </div>
+
+        {validImages.length > 1 && (
+          <>
+            <button
+              class="carousel-btn carousel-btn-prev"
+              aria-label="Previous image"
+              title="Previous (← or A)"
+              type="button"
+            >
+              <i class="ri-arrow-left-line" />
+            </button>
+            <button
+              class="carousel-btn carousel-btn-next"
+              aria-label="Next image"
+              title="Next (→ or D)"
+              type="button"
+            >
+              <i class="ri-arrow-right-line" />
+            </button>
+          </>
+        )}
+      </div>
+
+      {validImages.length > 1 && (
+        <div class="carousel-footer">
+          <div class="carousel-counter">
+            <span class="current-index">1</span> / {validImages.length}
+          </div>
+          <div class="carousel-indicators">
+            {validImages.map((_, index) => (
+              <button
+                class={`indicator ${index === 0 ? 'active' : ''}`}
+                data-index={index}
+                aria-label={`Go to image ${index + 1}`}
+                type="button"
+              />
+            ))}
+          </div>
+        </div>
+      )}
+    </div>
+  )
+}
+
+<style>
+  .image-carousel {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+  }
+
+  .carousel-container {
+    position: relative;
+    width: 100%;
+  }
+
+  .carousel-main {
+    position: relative;
+    overflow: hidden;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--carousel-bg, #f8f8f8);
+    touch-action: pan-y;
+    cursor: grab;
+    user-select: none;
+    width: 100%;
+    aspect-ratio: 16 / 9;
+  }
+
+  .carousel-main:active {
+    cursor: grabbing;
+  }
+
+  .carousel-track {
+    display: flex;
+    width: 100%;
+    height: 100%;
+    transition: transform 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  .carousel-image {
+    flex: 0 0 100%;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    object-fit: contain; /* default until detection runs */
+    background: transparent;
+  }
+
+  /* If an image is a standard landscape, fill the box and crop if needed */
+  .carousel-image.landscape {
+    object-fit: cover;
+  }
+
+  /* For non-landscape images, show them fully with white borders to fit the box */
+  .carousel-image.boxed {
+    object-fit: contain;
+    background: #fff;
+  }
+
+  .carousel-btn {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    background: rgba(255, 255, 255, 0.95);
+    border: 2px solid var(--border);
+    border-radius: 8px;
+    padding: 0.5rem;
+    cursor: pointer;
+    font-size: 1.1rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s ease;
+    z-index: 10;
+    box-shadow: 2px 2px 0 var(--border);
+  }
+
+  .carousel-btn:hover {
+    background: var(--pink);
+    box-shadow: 3px 3px 0 var(--border);
+    transform: translateY(-50%) translate(-1px, -1px) scale(0.98);
+  }
+
+  .carousel-btn:active {
+    box-shadow: 1px 1px 0 var(--border);
+    transform: translateY(-50%) translate(1px, 1px) scale(0.98);
+  }
+
+  .carousel-btn-prev {
+    left: 1rem;
+  }
+
+  .carousel-btn-next {
+    right: 1rem;
+  }
+
+  @media (max-width: 640px) {
+    .carousel-btn {
+      padding: 0.4rem;
+      font-size: 1rem;
+    }
+
+    .carousel-btn-prev {
+      left: 0.5rem;
+    }
+
+    .carousel-btn-next {
+      right: 0.5rem;
+    }
+  }
+
+  .carousel-footer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0.3rem 0.5rem;
+    background: transparent;
+    border: none;
+    border-radius: 6px;
+    box-shadow: none;
+    gap: 0.5rem;
+  }
+
+  .carousel-counter {
+    font-weight: 500;
+    font-size: 0.85rem;
+    flex-shrink: 0;
+    color: rgba(0, 0, 0, 0.55);
+  }
+
+  .current-index {
+    font-size: 0.98rem;
+    color: rgba(108, 167, 217, 0.9);
+  }
+
+  .carousel-indicators {
+    display: flex;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+    justify-content: center;
+    flex: 1;
+  }
+
+  /* Minimal indicator dots */
+  .indicator {
+    width: 6px;
+    height: 6px;
+    border: 1px solid rgba(0, 0, 0, 0.35);
+    border-radius: 50%;
+    background: rgba(0, 0, 0, 0.06);
+    cursor: pointer;
+    transition:
+      transform 0.12s ease,
+      background-color 0.12s ease;
+    padding: 0;
+    display: inline-block;
+    box-sizing: border-box;
+  }
+
+  .indicator:hover {
+    background: rgba(0, 0, 0, 0.09);
+    transform: scale(1.06);
+  }
+
+  .indicator.active {
+    background: rgba(243, 150, 229, 0.95);
+    transform: scale(1.08);
+    box-shadow: none;
+    border-color: rgba(0, 0, 0, 0.28);
+  }
+</style>
+
+<script>
+  class ImageCarousel {
+    private currentIndex = 0;
+    private totalImages = 0;
+    private container: HTMLElement | null = null;
+    private carouselMain: HTMLElement | null = null;
+    private carouselTrack: HTMLElement | null = null;
+    private images: NodeListOf<HTMLElement> | undefined;
+    private indicators: NodeListOf<Element> | undefined;
+    private touchStartX = 0;
+    private touchEndX = 0;
+    private isSwiping = false;
+
+    constructor(containerEl: HTMLElement) {
+      this.container = containerEl;
+      this.init();
+    }
+
+    private init() {
+      if (!this.container) return;
+
+      this.images = this.container.querySelectorAll('.carousel-image');
+      this.totalImages = this.images.length;
+
+      if (this.totalImages <= 1) return;
+
+      this.indicators = this.container.querySelectorAll('.indicator');
+      this.carouselMain = this.container.querySelector('.carousel-main');
+      this.carouselTrack = this.container.querySelector('.carousel-track');
+
+      this.setupEventListeners();
+    }
+
+    private setupEventListeners() {
+      this.container
+        ?.querySelector('.carousel-btn-prev')
+        ?.addEventListener('click', () => this.previous());
+      this.container
+        ?.querySelector('.carousel-btn-next')
+        ?.addEventListener('click', () => this.next());
+
+      this.indicators?.forEach((indicator, index) => {
+        indicator.addEventListener('click', () => this.goToSlide(index));
+      });
+
+      document.addEventListener('keydown', (e) => this.handleKeyboard(e));
+
+      // Add touch event listeners for swipe support
+      this.carouselMain?.addEventListener('touchstart', (e) =>
+        this.handleTouchStart(e)
+      );
+      this.carouselMain?.addEventListener('touchend', (e) =>
+        this.handleTouchEnd(e)
+      );
+
+      // Detect image aspect ratios and apply classes
+      this.detectImageOrientations();
+      window.addEventListener('resize', () => this.detectImageOrientations());
+    }
+
+    // Determine whether images are landscape-ish (wider than tall) and set classes.
+    private detectImageOrientations() {
+      if (!this.images) return;
+
+      this.images.forEach((imgEl) => {
+        // If image is already loaded, we can inspect naturalWidth/naturalHeight.
+        const el = imgEl as HTMLImageElement;
+        const applyClass = (w: number, h: number) => {
+          el.classList.remove('landscape', 'boxed');
+          // Treat anything wider than 1.25 ratio as landscape that should fill the box
+          if (w / h >= 1.25) {
+            el.classList.add('landscape');
+          } else {
+            // portrait or squat images get boxed white background
+            el.classList.add('boxed');
+          }
+        };
+
+        if (el.complete && el.naturalWidth && el.naturalHeight) {
+          applyClass(el.naturalWidth, el.naturalHeight);
+        } else {
+          // Attach a load listener in case the image hasn't loaded yet
+          el.addEventListener(
+            'load',
+            () =>
+              applyClass(
+                el.naturalWidth || el.width,
+                el.naturalHeight || el.height
+              ),
+            { once: true }
+          );
+        }
+      });
+    }
+
+    private handleTouchStart(e: TouchEvent) {
+      const touch = e.changedTouches?.[0];
+      if (touch) {
+        this.touchStartX = touch.screenX;
+        this.isSwiping = true;
+      }
+    }
+
+    private handleTouchEnd(e: TouchEvent) {
+      const touch = e.changedTouches?.[0];
+      if (touch) {
+        this.touchEndX = touch.screenX;
+        this.handleSwipe();
+        this.isSwiping = false;
+      }
+    }
+
+    private handleSwipe() {
+      const swipeThreshold = 50; // Minimum distance to be considered a swipe
+      const diff = this.touchStartX - this.touchEndX;
+
+      // Swipe left - show next image
+      if (diff > swipeThreshold) {
+        this.next();
+      }
+      // Swipe right - show previous image
+      else if (diff < -swipeThreshold) {
+        this.previous();
+      }
+    }
+
+    private goToSlide(index: number) {
+      if (index < 0 || index >= this.totalImages) return;
+      this.currentIndex = index;
+      this.render();
+    }
+
+    private next() {
+      this.currentIndex = (this.currentIndex + 1) % this.totalImages;
+      this.render();
+    }
+
+    private previous() {
+      this.currentIndex =
+        (this.currentIndex - 1 + this.totalImages) % this.totalImages;
+      this.render();
+    }
+
+    private handleKeyboard(e: KeyboardEvent) {
+      if (!this.container?.offsetParent) return;
+
+      const key = e.key.toLowerCase();
+      if (key === 'arrowright' || key === 'd') {
+        e.preventDefault();
+        this.next();
+      } else if (key === 'arrowleft' || key === 'a') {
+        e.preventDefault();
+        this.previous();
+      }
+    }
+
+    private render() {
+      this.updateImages();
+      this.updateCounter();
+      this.updateIndicators();
+    }
+
+    private updateImages() {
+      if (this.carouselTrack) {
+        const offset = -this.currentIndex * 100;
+        this.carouselTrack.style.transform = `translateX(${offset}%)`;
+      }
+    }
+
+    private updateCounter() {
+      const counter = this.container?.querySelector('.current-index');
+      if (counter) counter.textContent = String(this.currentIndex + 1);
+    }
+
+    private updateIndicators() {
+      this.indicators?.forEach((indicator, index) => {
+        indicator.classList.toggle('active', index === this.currentIndex);
+      });
+    }
+  }
+
+  document.querySelectorAll('.image-carousel').forEach((carousel) => {
+    new ImageCarousel(carousel as HTMLElement);
+  });
+</script>

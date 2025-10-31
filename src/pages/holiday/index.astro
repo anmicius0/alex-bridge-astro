@@ -1,0 +1,73 @@
+---
+import { getCollection, type CollectionEntry } from 'astro:content';
+import ContentList from '../../components/content/ContentList.astro';
+import ListLayout from '../../layouts/ListLayout.astro';
+import { getEntrySlugs } from '../../services/content-slug';
+
+const holidays: CollectionEntry<'holiday'>[] = await getCollection('holiday');
+
+// Get current time
+const now = new Date().getTime();
+
+// Separate holidays into upcoming and past based on startDate
+const { upcoming, past } = holidays.reduce<{
+  upcoming: CollectionEntry<'holiday'>[];
+  past: CollectionEntry<'holiday'>[];
+}>(
+  (acc, holiday) => {
+    if (new Date(holiday.data.startDate).getTime() >= now) {
+      acc.upcoming.push(holiday);
+    } else {
+      acc.past.push(holiday);
+    }
+    return acc;
+  },
+  { upcoming: [], past: [] }
+);
+
+const upcomingHolidays = upcoming.sort(
+  (a, b) =>
+    new Date(a.data.startDate).getTime() - new Date(b.data.startDate).getTime()
+);
+
+const pastHolidays = past.sort(
+  (a, b) =>
+    new Date(b.data.startDate).getTime() - new Date(a.data.startDate).getTime()
+);
+
+// Precompute slugs for holidays to avoid runtime slug computation
+const holidaySlugMap = getEntrySlugs(
+  [...upcomingHolidays, ...pastHolidays],
+  'holiday'
+);
+---
+
+<ListLayout
+  pageTitle="Reisen - Bridge mit Alexander"
+  title="Reisen"
+  intro="Entdecken Sie unsere geplanten Brückenreisen"
+  maxWidth="max-w-4xl"
+  isEmpty={upcomingHolidays.length === 0 && pastHolidays.length === 0}
+>
+  {
+    upcomingHolidays.length > 0 && (
+      <div>
+        <div class="mb-10 text-center">
+          <h2 class="mb-4 text-3xl md:text-4xl">Kommende Reisen</h2>
+        </div>
+        <ContentList items={upcomingHolidays} slugMap={holidaySlugMap} />
+      </div>
+    )
+  }
+
+  {
+    pastHolidays.length > 0 && (
+      <div class="mt-16">
+        <div class="mb-10 text-center">
+          <h2 class="mb-4 text-3xl md:text-4xl">Vergangene Reisen</h2>
+        </div>
+        <ContentList items={pastHolidays} slugMap={holidaySlugMap} />
+      </div>
+    )
+  }
+</ListLayout>

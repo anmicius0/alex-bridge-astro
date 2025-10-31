@@ -1,0 +1,84 @@
+---
+// src/components/Button.astro
+interface Props {
+  text: string;
+  href?: string;
+  target?: '_self' | '_blank';
+  variant?: 'primary' | 'warning';
+  size?: 'sm' | 'md' | 'lg';
+  block?: boolean;
+  ariaLabel?: string;
+  icon?: string;
+  iconRight?: boolean;
+  type?: 'button' | 'submit' | 'reset';
+  disabled?: boolean;
+  download?: boolean | string;
+  loading?: boolean;
+  class?: string;
+}
+
+const {
+  text,
+  href,
+  target = '_self',
+  variant = 'primary',
+  size = 'md',
+  block = false,
+  ariaLabel = text,
+  icon,
+  iconRight = false,
+  download = false,
+  type,
+  disabled = false,
+  loading = false,
+  class: extraClass = '',
+} = Astro.props;
+
+const base =
+  'inline-flex items-center justify-center gap-2 font-semibold border-3 rounded-md transition-all duration-200 ' +
+  'shadow-[4px_4px_0_#000] hover:shadow-[10px_10px_0_#000] hover:-translate-x-[1px] hover:-translate-y-[1px]';
+
+const sizeMap: Record<string, string> = {
+  sm: 'h-10 px-4 text-sm',
+  md: 'h-12 px-6 text-base',
+  lg: 'h-14 px-7 text-lg',
+};
+
+// Variants: primary uses green, warning uses red
+const variantMap: Record<string, string> = {
+  primary: 'bg-[var(--green)] text-black',
+  warning: 'bg-[var(--red)] text-black',
+};
+
+const width = block ? 'w-full' : '';
+const classes = `${base} ${sizeMap[size]} ${variantMap[variant]} ${width} ${extraClass} ${disabled ? 'opacity-50 cursor-not-allowed' : ''}`;
+const displayText = loading ? 'Loading...' : text;
+---
+
+{
+  href ? (
+    <a
+      href={href}
+      target={target}
+      download={download || undefined}
+      aria-label={ariaLabel}
+      rel={target === '_blank' ? 'noopener noreferrer' : undefined}
+      class={classes}
+    >
+      {!iconRight && icon && <span aria-hidden="true">{icon}</span>}
+      <span>{displayText}</span>
+      {iconRight && icon && <span aria-hidden="true">{icon}</span>}
+    </a>
+  ) : (
+    <button
+      type={type || 'button'}
+      aria-label={ariaLabel}
+      disabled={disabled || loading}
+      class={classes}
+    >
+      {!iconRight && icon && <span aria-hidden="true">{icon}</span>}
+      <span>{displayText}</span>
+      {iconRight && icon && <span aria-hidden="true">{icon}</span>}
+    </button>
+  )
+}
